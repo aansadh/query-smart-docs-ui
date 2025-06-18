@@ -6,8 +6,7 @@ import { UploadDocuments } from '@/components/UploadDocuments';
 import { QueryInterface } from '@/components/QueryInterface';
 import { WebScraping } from '@/components/WebScraping';
 import { FileManagement } from '@/components/FileManagement';
-import { TokenGeneration } from '@/components/TokenGeneration';
-import ApiDocs from '@/pages/ApiDocs';
+import { Settings } from '@/components/Settings';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -24,10 +23,8 @@ const Index = () => {
         return <WebScraping />;
       case 'files':
         return <FileManagement />;
-      case 'token':
-        return <TokenGeneration />;
-      case 'api-docs':
-        return <ApiDocs />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard onViewChange={setCurrentView} />;
     }

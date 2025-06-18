@@ -1,129 +1,130 @@
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, MessageSquare, Upload, Globe, Key, BarChart3, Clock, Database } from 'lucide-react';
-import { SessionManager } from '@/components/SessionManager';
-import { useState } from 'react';
+import { FileText, MessageSquare, Upload, Globe, Activity, Zap } from 'lucide-react';
+import { apiService } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
   onViewChange: (view: string) => void;
 }
 
 export const Dashboard = ({ onViewChange }: DashboardProps) => {
-  const [currentSessionId, setCurrentSessionId] = useState<string>('session-1');
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    checkConnection();
+  }, []);
+
+  const checkConnection = async () => {
+    setIsLoading(true);
+    try {
+      await apiService.healthCheck();
+      setIsConnected(true);
+    } catch (error) {
+      setIsConnected(false);
+      console.error('Connection check failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const quickActions = [
     {
-      title: "Upload Documents",
-      description: "Add PDFs or text to your session",
+      title: 'Upload Document',
+      description: 'Add a new PDF or text document',
       icon: Upload,
-      action: "upload",
-      color: "from-emerald-500 to-emerald-600"
+      action: () => onViewChange('upload'),
+      color: 'bg-blue-500',
     },
     {
-      title: "Ask Questions",
-      description: "Query your documents with AI",
+      title: 'Ask Question',
+      description: 'Query your uploaded documents',
       icon: MessageSquare,
-      action: "query",
-      color: "from-violet-500 to-violet-600"
+      action: () => onViewChange('query'),
+      color: 'bg-green-500',
     },
     {
-      title: "Web Scraping",
-      description: "Import content from URLs",
+      title: 'Web Scraping',
+      description: 'Import content from URLs',
       icon: Globe,
-      action: "scrape",
-      color: "from-orange-500 to-orange-600"
+      action: () => onViewChange('scrape'),
+      color: 'bg-purple-500',
     },
     {
-      title: "Generate Token",
-      description: "Create API access token",
-      icon: Key,
-      action: "token",
-      color: "from-rose-500 to-rose-600"
-    }
+      title: 'Manage Files',
+      description: 'View and organize documents',
+      icon: FileText,
+      action: () => onViewChange('files'),
+      color: 'bg-orange-500',
+    },
   ];
 
-  const sessionStats = [
-    { label: "Documents", value: "12", icon: FileText },
-    { label: "Queries", value: "47", icon: MessageSquare },
-    { label: "Sessions", value: "3", icon: Database },
-    { label: "Uptime", value: "99.9%", icon: Clock }
+  const features = [
+    {
+      title: 'AI-Powered Q&A',
+      description: 'Ask natural language questions about your documents and get intelligent answers.',
+      icon: Zap,
+    },
+    {
+      title: 'Multi-Format Support',
+      description: 'Upload PDFs, text documents, or scrape content directly from web URLs.',
+      icon: FileText,
+    },
+    {
+      title: 'Session Management',
+      description: 'Organize your work with persistent sessions that maintain context.',
+      icon: Activity,
+    },
   ];
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-          Welcome to CogniDoc
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Your AI-powered document assistant. Upload documents, ask questions, and extract insights with advanced AI technology.
-        </p>
-      </div>
-
-      {/* Session Management */}
-      <Card className="border-primary/20">
+      {/* Status Card */}
+      <Card className="border-l-4 border-l-blue-500">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="w-5 h-5 text-primary" />
-            Session Management
-          </CardTitle>
-          <CardDescription>
-            Manage your document sessions. Each session isolates your documents and conversation history.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl">System Status</CardTitle>
+              <CardDescription>API connection and service health</CardDescription>
+            </div>
+            <Button variant="outline" onClick={checkConnection} disabled={isLoading}>
+              {isLoading ? 'Checking...' : 'Refresh'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <SessionManager 
-            currentSessionId={currentSessionId}
-            onSessionChange={setCurrentSessionId}
-          />
+          <div className="flex items-center space-x-3">
+            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className={`font-medium ${isConnected ? 'text-green-700' : 'text-red-700'}`}>
+              {isConnected ? 'Connected to API' : 'API Connection Failed'}
+            </span>
+          </div>
+          {!isConnected && (
+            <p className="text-sm text-gray-600 mt-2">
+              Please check your API URL in settings and ensure the backend is running.
+            </p>
+          )}
         </CardContent>
       </Card>
 
-      {/* Session Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {sessionStats.map((stat, index) => (
-          <Card key={index} className="border-border/50 hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <stat.icon className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Quick Actions */}
       <div>
-        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-primary" />
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
-            <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-border/50 cursor-pointer" onClick={() => onViewChange(action.action)}>
+            <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={action.action}>
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center`}>
                     <action.icon className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                      {action.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {action.description}
-                    </p>
-                    <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      Get Started
-                    </Button>
+                    <h4 className="font-semibold text-gray-900 mb-1">{action.title}</h4>
+                    <p className="text-sm text-gray-600">{action.description}</p>
                   </div>
                 </div>
               </CardContent>
@@ -133,33 +134,56 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
       </div>
 
       {/* Features Overview */}
-      <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Features</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {features.map((feature, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <feature.icon className="w-5 h-5 text-gray-600" />
+                  </div>
+                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600">
+                  {feature.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Getting Started */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
         <CardHeader>
-          <CardTitle>Platform Features</CardTitle>
-          <CardDescription>
-            Discover what makes CogniDoc powerful for document intelligence
+          <CardTitle className="text-xl text-blue-900">Getting Started</CardTitle>
+          <CardDescription className="text-blue-700">
+            Follow these simple steps to start using Smart PDF QA
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Smart Document Processing</h4>
-              <p className="text-sm text-muted-foreground">
-                Advanced AI extracts and indexes content from PDFs and text documents for instant searchability.
-              </p>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+              <span className="text-gray-700">Configure your API settings and create a session</span>
             </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Natural Language Queries</h4>
-              <p className="text-sm text-muted-foreground">
-                Ask questions in plain English and get precise, contextual answers from your documents.
-              </p>
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+              <span className="text-gray-700">Upload your PDF documents or add text content</span>
             </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Session Isolation</h4>
-              <p className="text-sm text-muted-foreground">
-                Organize documents in separate sessions with independent contexts and conversation histories.
-              </p>
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+              <span className="text-gray-700">Start asking questions about your documents</span>
             </div>
+          </div>
+          <div className="mt-6">
+            <Button onClick={() => onViewChange('settings')} className="bg-blue-600 hover:bg-blue-700">
+              Get Started
+            </Button>
           </div>
         </CardContent>
       </Card>
