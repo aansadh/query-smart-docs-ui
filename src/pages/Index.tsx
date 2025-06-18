@@ -1,13 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import { Layout } from '@/components/Layout';
+import { Dashboard } from '@/components/Dashboard';
+import { UploadDocuments } from '@/components/UploadDocuments';
+import { QueryInterface } from '@/components/QueryInterface';
+import { WebScraping } from '@/components/WebScraping';
+import { FileManagement } from '@/components/FileManagement';
+import { Settings } from '@/components/Settings';
 
 const Index = () => {
+  const [currentView, setCurrentView] = useState('dashboard');
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard onViewChange={setCurrentView} />;
+      case 'upload':
+        return <UploadDocuments />;
+      case 'query':
+        return <QueryInterface />;
+      case 'scrape':
+        return <WebScraping />;
+      case 'files':
+        return <FileManagement />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return <Dashboard onViewChange={setCurrentView} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <Layout currentView={currentView} onViewChange={setCurrentView}>
+      {renderCurrentView()}
+    </Layout>
   );
 };
 
