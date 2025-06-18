@@ -1,18 +1,19 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings as SettingsIcon, Key, Database, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Settings as SettingsIcon, Key, Database, Loader2, CheckCircle, XCircle, Eye, EyeOff, Copy, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '@/services/api';
 
 export const Settings = () => {
-  const [apiToken, setApiToken] = useState('');
   const [apiUrl, setApiUrl] = useState('http://localhost:8000');
   const [sessionId, setSessionId] = useState('');
+  const [generatedToken, setGeneratedToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isCreatingToken, setIsCreatingToken] = useState(false);
@@ -21,11 +22,9 @@ export const Settings = () => {
 
   useEffect(() => {
     // Load saved settings
-    const savedToken = localStorage.getItem('api_token');
     const savedUrl = localStorage.getItem('api_url');
     const savedSessionId = localStorage.getItem('session_id');
     
-    if (savedToken) setApiToken(savedToken);
     if (savedUrl) setApiUrl(savedUrl);
     if (savedSessionId) setSessionId(savedSessionId);
     
@@ -47,10 +46,6 @@ export const Settings = () => {
 
   const handleSaveSettings = () => {
     localStorage.setItem('api_url', apiUrl);
-    if (apiToken) {
-      localStorage.setItem('api_token', apiToken);
-      apiService.setToken(apiToken);
-    }
     
     toast({
       title: "Settings saved",
@@ -67,12 +62,11 @@ export const Settings = () => {
       console.log('Token creation response:', response);
       
       if (response.token) {
-        setApiToken(response.token);
-        apiService.setToken(response.token);
-        localStorage.setItem('api_token', response.token);
+        setGeneratedToken(response.token);
+        setShowToken(true);
         toast({
-          title: "Token created",
-          description: "New API token has been generated and saved",
+          title: "API Token Generated",
+          description: "Your new API token has been created. Copy it now - it won't be shown again!",
         });
       } else {
         toast({
@@ -145,6 +139,14 @@ export const Settings = () => {
     }
   };
 
+  const copyToken = () => {
+    navigator.clipboard.writeText(generatedToken);
+    toast({
+      title: "Token copied",
+      description: "API token has been copied to clipboard",
+    });
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
@@ -154,15 +156,16 @@ export const Settings = () => {
             <span>Settings</span>
           </CardTitle>
           <CardDescription>
-            Configure API settings and manage your session
+            Configure API settings, manage sessions, and generate API tokens
           </CardDescription>
         </CardHeader>
       </Card>
 
       <Tabs defaultValue="connection" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="connection">API Connection</TabsTrigger>
           <TabsTrigger value="session">Session Management</TabsTrigger>
+          <TabsTrigger value="tokens">API Tokens</TabsTrigger>
           <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
 
@@ -185,34 +188,6 @@ export const Settings = () => {
                 />
                 <p className="text-sm text-gray-500">
                   The base URL of your Smart PDF QA API server
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="apiToken">API Token</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="apiToken"
-                    type="password"
-                    value={apiToken}
-                    onChange={(e) => setApiToken(e.target.value)}
-                    placeholder="Enter your API token"
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={handleCreateToken}
-                    disabled={isCreatingToken}
-                    variant="outline"
-                  >
-                    {isCreatingToken ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Key className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-sm text-gray-500">
-                  Your authentication token for API access
                 </p>
               </div>
 
@@ -269,7 +244,7 @@ export const Settings = () => {
                   className="bg-gray-50"
                 />
                 <p className="text-sm text-gray-500">
-                  Sessions help organize your documents and maintain context
+                  Sessions isolate your documents like separate conversations in ChatGPT
                 </p>
               </div>
 
@@ -306,11 +281,99 @@ export const Settings = () => {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-medium text-blue-900 mb-2">Session Benefits</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Keep your documents organized and separate from other users</li>
-                  <li>• Maintain context across multiple queries and uploads</li>
-                  <li>• Enable session-specific file management</li>
-                  <li>• Improved security and data isolation</li>
+                  <li>• Isolate documents by project or topic</li>
+                  <li>• Maintain separate conversation contexts</li>
+                  <li>• Generate session-specific API tokens</li>
+                  <li>• Organize your knowledge base efficiently</li>
                 </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tokens">
+          <Card>
+            <CardHeader>
+              <CardTitle>API Tokens</CardTitle>
+              <CardDescription>
+                Generate API tokens for programmatic access to your sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {generatedToken && (
+                <Alert className="border-yellow-200 bg-yellow-50">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    <div className="space-y-3">
+                      <p className="font-medium">Your API Token (Save this now - it won't be shown again!)</p>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          value={generatedToken}
+                          readOnly
+                          type={showToken ? 'text' : 'password'}
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowToken(!showToken)}
+                        >
+                          {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={copyToken}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Generate New Token</h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Create a new API token for the current session. Each token is unique and provides 
+                    programmatic access to upload documents and query your knowledge base.
+                  </p>
+                  
+                  <Button
+                    onClick={handleCreateToken}
+                    disabled={isCreatingToken || !sessionId}
+                  >
+                    {isCreatingToken ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating Token...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="w-4 h-4 mr-2" />
+                        Generate API Token
+                      </>
+                    )}
+                  </Button>
+                  
+                  {!sessionId && (
+                    <p className="text-sm text-red-600 mt-2">
+                      Please create a session first before generating tokens.
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <h4 className="font-medium text-orange-900 mb-2">Security Notice</h4>
+                  <ul className="text-sm text-orange-700 space-y-1">
+                    <li>• Tokens are shown only once upon generation</li>
+                    <li>• Store tokens securely in your application</li>
+                    <li>• Tokens are scoped to the session they were created in</li>
+                    <li>• Regenerate tokens if compromised</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -328,18 +391,20 @@ export const Settings = () => {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Features</h4>
                 <ul className="text-gray-700 space-y-1">
+                  <li>• Session-based document organization</li>
                   <li>• Upload and process PDF documents</li>
                   <li>• Add text content directly</li>
                   <li>• Scrape content from web URLs</li>
-                  <li>• Ask natural language questions about your content</li>
-                  <li>• Session-based document management</li>
-                  <li>• RESTful API integration</li>
+                  <li>• Ask natural language questions</li>
+                  <li>• Generate API tokens for integration</li>
+                  <li>• RESTful API for developers</li>
                 </ul>
               </div>
 
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">API Endpoints</h4>
                 <div className="text-sm text-gray-600 space-y-1">
+                  <div>• <code className="bg-gray-100 px-1 rounded">POST /token/new-token</code> - Generate API tokens</div>
                   <div>• <code className="bg-gray-100 px-1 rounded">POST /session/new-session</code> - Create new session</div>
                   <div>• <code className="bg-gray-100 px-1 rounded">POST /ingest/uploadPdf</code> - Upload PDF files</div>
                   <div>• <code className="bg-gray-100 px-1 rounded">POST /ingest/uploadText</code> - Upload text content</div>
@@ -351,7 +416,7 @@ export const Settings = () => {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Version Information</h4>
                 <div className="text-gray-700 space-y-1">
-                  <div>Interface Version: 1.0.0</div>
+                  <div>Interface Version: 2.0.0</div>
                   <div>API Version: OpenAPI 3.1.0</div>
                   <div>Built with: React, TypeScript, Tailwind CSS</div>
                 </div>
