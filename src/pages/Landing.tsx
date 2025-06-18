@@ -2,133 +2,135 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bot, FileText, MessageSquare, Globe, Users, BookOpen, Star, ArrowRight } from 'lucide-react';
+import { Bot, Upload, MessageSquare, Globe, Shield, Zap, Code, Users, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const Landing = () => {
+export const Landing = () => {
   const features = [
     {
-      icon: FileText,
-      title: 'Document Upload',
-      description: 'Upload PDFs and text documents for AI-powered analysis and querying.'
+      icon: Upload,
+      title: "Smart Document Upload",
+      description: "Upload PDFs, add text content, or scrape web pages. Our AI processes and indexes everything for instant searchability."
     },
     {
       icon: MessageSquare,
-      title: 'Intelligent Q&A',
-      description: 'Ask natural language questions about your documents and get accurate answers.'
+      title: "Intelligent Q&A",
+      description: "Ask natural language questions about your documents. Get precise, contextual answers powered by advanced AI."
+    },
+    {
+      icon: Bot,
+      title: "Session-Based Organization",
+      description: "Organize your documents in isolated sessions. Each session maintains its own context and conversation history."
     },
     {
       icon: Globe,
-      title: 'Web Scraping',
-      description: 'Import content directly from web URLs for comprehensive document analysis.'
+      title: "Web Content Scraping",
+      description: "Import content directly from web URLs. Perfect for research, documentation, and knowledge gathering."
     },
     {
-      icon: Users,
-      title: 'Session Management',
-      description: 'Organize your documents in isolated sessions for better project management.'
+      icon: Code,
+      title: "Developer API",
+      description: "Integrate with your applications using our REST API. Generate tokens and access all features programmatically."
+    },
+    {
+      icon: Shield,
+      title: "Secure & Private",
+      description: "Your data is encrypted and isolated. Each session is completely private with enterprise-grade security."
     }
   ];
 
-  const stats = [
-    { label: 'Active Users', value: '10,000+' },
-    { label: 'Documents Processed', value: '1M+' },
-    { label: 'Questions Answered', value: '5M+' },
-    { label: 'API Calls', value: '50M+' }
+  const benefits = [
+    "Process unlimited PDF documents",
+    "Natural language querying",
+    "Session-based organization",
+    "Web content integration",
+    "Developer-friendly API",
+    "Enterprise security"
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Navigation */}
-      <nav className="bg-background/80 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg animate-glow">
-              <Bot className="w-6 h-6 text-primary-foreground" />
+      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+                <Bot className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">CogniDoc</h1>
+                <p className="text-sm text-muted-foreground">AI-Powered Document Assistant</p>
+              </div>
             </div>
-            <h1 className="text-xl font-bold text-gradient">CogniDoc</h1>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <Link to="/docs">
-              <Button variant="ghost" className="text-foreground hover:text-primary">
-                <BookOpen className="w-4 h-4 mr-2" />
-                Documentation
-              </Button>
-            </Link>
-            <Link to="/app">
-              <Button className="gradient-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300">
-                Get Started
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link to="/app">
+                <Button variant="outline">Sign In</Button>
+              </Link>
+              <Link to="/app">
+                <Button className="bg-primary hover:bg-primary/90">Get Started</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="px-6 py-20">
+      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-6 px-4 py-2 bg-primary/10 text-primary border-primary/20">
+          <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary border-primary/20">
+            <Zap className="w-4 h-4 mr-2" />
             AI-Powered Document Intelligence
           </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient leading-tight">
-            Transform Your Documents
-            <br />
-            Into Conversations
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+            Transform Your Documents into
+            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"> Interactive Knowledge</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Upload PDFs, add text content, scrape web pages, and ask intelligent questions about your documents. 
-            CogniDoc makes document analysis effortless with AI-powered insights.
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            Upload PDFs, scrape web content, and ask intelligent questions about your documents. 
+            Organize everything in sessions for perfect context management.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Link to="/app">
-              <Button size="lg" className="gradient-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4">
-                Start Analyzing Documents
-                <ArrowRight className="w-5 h-5 ml-2" />
+              <Button size="lg" className="text-lg px-8 py-3 bg-primary hover:bg-primary/90">
+                Start Free Trial
               </Button>
             </Link>
             <Link to="/docs">
-              <Button size="lg" variant="outline" className="px-8 py-4 border-primary/20 hover:bg-primary/10">
-                View API Documentation
+              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+                <Code className="w-5 h-5 mr-2" />
+                API Documentation
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="px-6 py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-gradient mb-2">{stat.value}</div>
-                <div className="text-muted-foreground font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="px-6 py-20">
+      {/* Features Grid */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 text-gradient">Powerful Features</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Everything You Need for Document Intelligence
+            </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to unlock the potential of your documents with AI-powered analysis.
+              Powerful features designed to make your documents searchable, queryable, and actionable.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group">
-                <CardHeader className="pb-4">
-                  <div className="w-12 h-12 gradient-primary rounded-lg flex items-center justify-center mb-4 group-hover:animate-glow transition-all duration-300">
+              <Card key={index} className="border-border/50 hover:shadow-lg transition-all duration-300 hover:border-primary/20">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center mb-4 shadow-lg">
                     <feature.icon className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <CardTitle className="text-foreground group-hover:text-primary transition-colors duration-300">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-muted-foreground leading-relaxed">{feature.description}</CardDescription>
+                  <CardDescription className="text-muted-foreground leading-relaxed">
+                    {feature.description}
+                  </CardDescription>
                 </CardContent>
               </Card>
             ))}
@@ -136,47 +138,124 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="px-6 py-20 bg-gradient-to-r from-primary/10 to-primary/5">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-gradient">Ready to Get Started?</h2>
-          <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-            Join thousands of users who are already transforming their document workflows with CogniDoc.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to="/app">
-              <Button size="lg" className="gradient-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4">
-                Start Your First Session
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <div className="flex items-center space-x-1 text-muted-foreground">
-              <Star className="w-4 h-4 fill-current text-primary" />
-              <Star className="w-4 h-4 fill-current text-primary" />
-              <Star className="w-4 h-4 fill-current text-primary" />
-              <Star className="w-4 h-4 fill-current text-primary" />
-              <Star className="w-4 h-4 fill-current text-primary" />
-              <span className="ml-2">Trusted by developers worldwide</span>
+      {/* Benefits Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-foreground mb-6">
+                Why Choose CogniDoc?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8">
+                Join thousands of users who trust CogniDoc for their document intelligence needs.
+              </p>
+              
+              <div className="space-y-4">
+                {benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    <span className="text-foreground/80">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8">
+                <Link to="/app">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90">
+                    Get Started Today
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            <div className="bg-card rounded-2xl shadow-xl p-8 border border-border/50">
+              <div className="space-y-6">
+                <div className="flex items-center space-x-3">
+                  <Users className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">10,000+</p>
+                    <p className="text-muted-foreground">Active Users</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Upload className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">1M+</p>
+                    <p className="text-muted-foreground">Documents Processed</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MessageSquare className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">5M+</p>
+                    <p className="text-muted-foreground">Questions Answered</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="px-6 py-12 border-t border-border/50">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <h3 className="text-lg font-bold text-gradient">CogniDoc</h3>
-          </div>
-          <p className="text-muted-foreground mb-6">
-            AI-Powered Document Assistant for the Modern Workflow
+      {/* CTA Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary to-primary/80">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-primary-foreground mb-6">
+            Ready to Transform Your Documents?
+          </h2>
+          <p className="text-xl text-primary-foreground/90 mb-8">
+            Start your free trial today and experience the power of AI-driven document intelligence.
           </p>
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-            <Link to="/docs" className="hover:text-primary transition-colors">Documentation</Link>
-            <Link to="/app" className="hover:text-primary transition-colors">Application</Link>
+          <Link to="/app">
+            <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+              Start Free Trial
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-card text-foreground py-12 px-4 sm:px-6 lg:px-8 border-t border-border/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-bold">CogniDoc</span>
+              </div>
+              <p className="text-muted-foreground">
+                AI-powered document intelligence for the modern world.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link to="/app" className="hover:text-foreground transition-colors">Dashboard</Link></li>
+                <li><Link to="/docs" className="hover:text-foreground transition-colors">API Docs</Link></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Contact Us</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Status</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Terms</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
+            <p>&copy; 2024 CogniDoc. All rights reserved.</p>
           </div>
         </div>
       </footer>
