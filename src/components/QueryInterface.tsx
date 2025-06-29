@@ -1,10 +1,9 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Bot, User, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, Bot, User, Loader2, Upload, Globe, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '@/services/api';
 
@@ -122,142 +121,162 @@ export const QueryInterface = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-200px)] flex flex-col space-y-4">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="w-5 h-5" />
-                <span>Ask Questions</span>
-              </CardTitle>
-              <CardDescription>
-                Query your uploaded documents using natural language
-              </CardDescription>
-            </div>
-            {messages.length > 0 && (
-              <Button variant="outline" onClick={clearChat}>
-                Clear Chat
-              </Button>
-            )}
+    <div className="max-w-5xl mx-auto h-[calc(100vh-180px)] flex flex-col">
+      {/* Header - Fixed */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+            <MessageSquare className="w-5 h-5 text-primary-foreground" />
           </div>
-        </CardHeader>
-      </Card>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Ask Questions</h2>
+            <p className="text-muted-foreground">Query your uploaded documents using natural language</p>
+          </div>
+        </div>
+        {messages.length > 0 && (
+          <Button variant="outline" onClick={clearChat} className="border-border text-foreground">
+            Clear Chat
+          </Button>
+        )}
+      </div>
 
-      <div className="flex-1 flex flex-col">
-        <Card className="flex-1 flex flex-col">
-          <CardContent className="flex-1 flex flex-col p-0">
-            <ScrollArea className="flex-1 p-6">
-              {messages.length === 0 ? (
-                <div className="space-y-6">
-                  <div className="text-center py-8">
-                    <Bot className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Start a conversation
-                    </h3>
-                    <p className="text-gray-600 mb-6">
-                      Ask questions about your uploaded documents and I'll provide intelligent answers.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Example questions:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {exampleQueries.map((example, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          className="text-left h-auto p-3 whitespace-normal"
-                          onClick={() => setQuery(example)}
+      {/* Chat Area - Flexible */}
+      <div className="flex-1 flex flex-col bg-card/30 rounded-2xl border border-border/50 backdrop-blur-sm">
+        <ScrollArea className="flex-1 p-6">
+          {messages.length === 0 ? (
+            <div className="space-y-8 h-full flex flex-col justify-center">
+              <div className="text-center">
+                <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 animate-glow">
+                  <Bot className="w-10 h-10 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">
+                  Start a conversation
+                </h3>
+                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                  Ask questions about your uploaded documents and I'll provide intelligent answers based on the content.
+                </p>
+              </div>
+              
+              <div className="max-w-2xl mx-auto w-full">
+                <h4 className="font-medium text-foreground mb-4 text-center">Example questions:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {exampleQueries.map((example, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className="text-left h-auto p-4 whitespace-normal border-border text-foreground hover:bg-accent hover:border-primary/50 transition-all duration-300"
+                      onClick={() => setQuery(example)}
+                    >
+                      {example}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-4 rounded-2xl ${
+                      message.sender === 'user'
+                        ? 'gradient-primary text-primary-foreground shadow-lg'
+                        : 'bg-muted/50 text-foreground border border-border/50'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      {message.sender === 'bot' && (
+                        <Bot className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                      )}
+                      {message.sender === 'user' && (
+                        <User className="w-5 h-5 text-primary-foreground/80 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                        <p
+                          className={`text-xs mt-3 ${
+                            message.sender === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                          }`}
                         >
-                          {example}
-                        </Button>
-                      ))}
+                          {formatTime(message.timestamp)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] p-3 rounded-lg ${
-                          message.sender === 'user'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}
-                      >
-                        <div className="flex items-start space-x-2">
-                          {message.sender === 'bot' && (
-                            <Bot className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                          )}
-                          {message.sender === 'user' && (
-                            <User className="w-5 h-5 text-blue-100 mt-0.5 flex-shrink-0" />
-                          )}
-                          <div className="flex-1">
-                            <p className="whitespace-pre-wrap">{message.text}</p>
-                            <p
-                              className={`text-xs mt-2 ${
-                                message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
-                              }`}
-                            >
-                              {formatTime(message.timestamp)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-muted/50 p-4 rounded-2xl border border-border/50">
+                    <div className="flex items-center space-x-3">
+                      <Bot className="w-5 h-5 text-primary" />
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-foreground">Thinking...</span>
                     </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 p-3 rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <Bot className="w-5 h-5 text-gray-600" />
-                          <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
-                          <span className="text-gray-600">Thinking...</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
-            </ScrollArea>
-            
-            <div className="border-t p-4">
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="flex space-x-3">
-                  <Textarea
-                    ref={textareaRef}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask a question about your documents..."
-                    className="flex-1 min-h-[50px] max-h-[120px] resize-none"
-                    disabled={isLoading}
-                  />
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </ScrollArea>
+        
+        {/* Input Area - Fixed at bottom */}
+        <div className="border-t border-border/50 p-6 bg-background/50 backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex space-x-3">
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={textareaRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask a question about your documents..."
+                  className="min-h-[60px] max-h-[120px] resize-none bg-background border-border text-foreground pr-24"
+                  disabled={isLoading}
+                />
+                <div className="absolute right-2 top-2 flex space-x-1">
                   <Button
-                    type="submit"
-                    disabled={!query.trim() || isLoading}
-                    className="self-end"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Upload files"
                   >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
+                    <Upload className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Add URL"
+                  >
+                    <Globe className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500">
-                  Press Enter to send, Shift+Enter for new line
-                </p>
-              </form>
+              </div>
+              <Button
+                type="submit"
+                disabled={!query.trim() || isLoading}
+                className="self-end gradient-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+                size="lg"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-xs text-muted-foreground">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );
