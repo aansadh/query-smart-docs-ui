@@ -55,14 +55,14 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
   const currentSessionName = localStorage.getItem('currentSessionName') || 'Research Papers';
 
   return (
-    <Sidebar className="glass-effect border-r border-border/30 shadow-soft">
-      <SidebarHeader className="p-6 border-b border-border/30">
+    <Sidebar className="border-r border-border">
+      <SidebarHeader className="p-6 border-b border-border">
         <Link to="/" className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-medium animate-glow group-hover:scale-110 transition-all duration-300">
-            <Bot className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-foreground rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Bot className="w-6 h-6 text-background" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gradient">
+            <h1 className="text-xl font-bold text-foreground">
               CogniDoc
             </h1>
             <p className="text-sm text-muted-foreground">AI Document Assistant</p>
@@ -70,30 +70,28 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         </Link>
       </SidebarHeader>
       
-      <SidebarContent className="px-4 py-6 space-professional">
+      <SidebarContent className="px-4 py-6">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
             Session Features
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
                     asChild
-                    className={`w-full justify-start py-4 px-4 rounded-xl transition-all duration-300 hover:shadow-soft group ${
+                    className={`w-full justify-start py-3 px-3 rounded-lg transition-colors ${
                       currentView === item.id 
-                        ? 'gradient-primary text-white shadow-medium' 
-                        : 'text-foreground/80 hover:bg-accent/50'
+                        ? 'bg-foreground text-background' 
+                        : 'text-foreground/70 hover:bg-accent hover:text-foreground'
                     }`}
                   >
                     <button onClick={() => onViewChange(item.id)} className="flex items-center space-x-3 text-left">
-                      <item.icon className={`w-5 h-5 transition-colors ${
-                        currentView === item.id ? 'text-white' : 'text-muted-foreground group-hover:text-primary'
-                      }`} />
+                      <item.icon className="w-5 h-5" />
                       <div>
-                        <div className="font-medium">{item.title}</div>
-                        <div className={`text-xs ${currentView === item.id ? 'text-white/80' : 'text-muted-foreground'}`}>
+                        <div className="font-medium text-sm">{item.title}</div>
+                        <div className={`text-xs ${currentView === item.id ? 'text-background/70' : 'text-muted-foreground'}`}>
                           {item.description}
                         </div>
                       </div>
@@ -114,12 +112,12 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild
-                  className="w-full justify-start py-4 px-4 rounded-xl transition-all duration-300 hover:bg-accent/50 hover:shadow-soft text-foreground/80 group"
+                  className="w-full justify-start py-3 px-3 rounded-lg transition-colors text-foreground/70 hover:bg-accent hover:text-foreground"
                 >
                   <button onClick={() => onViewChange('api-docs')} className="flex items-center space-x-3 text-left">
-                    <BookOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <BookOpen className="w-5 h-5" />
                     <div>
-                      <div className="font-medium">API Documentation</div>
+                      <div className="font-medium text-sm">API Documentation</div>
                       <div className="text-xs text-muted-foreground">Integration guide</div>
                     </div>
                   </button>
@@ -130,9 +128,9 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-border/30">
+      <SidebarFooter className="p-4 border-t border-border">
         <div className="space-y-4">
-          <div className="flex items-center space-x-3 text-sm p-3 rounded-xl glass-effect">
+          <div className="flex items-center space-x-3 text-sm p-3 rounded-lg bg-accent">
             <User className="w-4 h-4 text-muted-foreground" />
             <div>
               <div className="font-medium text-foreground">{currentSessionName}</div>
@@ -144,7 +142,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               variant="ghost" 
               size="sm"
               onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground focus-ring rounded-lg"
+              className="text-muted-foreground hover:text-foreground focus-ring"
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
@@ -152,7 +150,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               variant="ghost" 
               size="sm"
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-destructive focus-ring rounded-lg"
+              className="text-muted-foreground hover:text-destructive focus-ring"
             >
               <LogOut className="w-4 h-4" />
             </Button>
@@ -169,7 +167,7 @@ export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => 
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar currentView={currentView} onViewChange={onViewChange} />
         <main className="flex-1 flex flex-col">
-          <header className="glass-effect px-6 py-4 sticky top-0 z-40 shadow-soft">
+          <header className="px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors focus-ring" />

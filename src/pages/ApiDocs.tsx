@@ -53,23 +53,23 @@ const ApiDocs = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full glass-effect z-50 shadow-soft">
+      <nav className="fixed top-0 w-full bg-background/80 backdrop-blur-xl z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-medium animate-glow group-hover:scale-110 transition-all duration-300">
-                <Bot className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Bot className="w-6 h-6 text-background" />
               </div>
-              <h1 className="text-xl font-bold text-gradient">CogniDoc</h1>
+              <h1 className="text-xl font-bold text-foreground">CogniDoc</h1>
             </Link>
             <div className="flex items-center space-x-4">
               <Link to="/">
-                <Button variant="ghost" className="text-foreground hover:text-primary focus-ring">
+                <Button variant="ghost" className="text-foreground hover:text-foreground/80 focus-ring">
                   Home
                 </Button>
               </Link>
               <Link to="/app">
-                <Button className="gradient-primary text-white shadow-medium hover-lift focus-ring">
+                <Button className="bg-foreground text-background hover:bg-foreground/90 focus-ring">
                   Try CogniDoc
                 </Button>
               </Link>
@@ -80,26 +80,26 @@ const ApiDocs = () => {
 
       <div className="max-w-6xl mx-auto px-6 py-32">
         {/* Header */}
-        <div className="text-center mb-16 animate-fade-in-up">
-          <Badge variant="secondary" className="mb-6 px-6 py-2 bg-primary/10 text-primary border-primary/20 shadow-soft">
+        <div className="text-center mb-16 animate-fade-in">
+          <Badge variant="secondary" className="mb-6 px-6 py-2">
             API Documentation
           </Badge>
-          <h1 className="text-5xl font-bold mb-6 text-gradient">CogniDoc API</h1>
-          <p className="text-xl text-muted-foreground max-w-4xl mx-auto text-pretty">
+          <h1 className="text-5xl font-bold mb-6 text-foreground">CogniDoc API</h1>
+          <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
             Integrate CogniDoc's AI-powered document analysis into your applications with our simple, powerful REST API.
           </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 glass-effect shadow-soft">
-            <TabsTrigger value="overview" className="data-[state=active]:gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium">Overview</TabsTrigger>
-            <TabsTrigger value="authentication" className="data-[state=active]:gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium">Authentication</TabsTrigger>
-            <TabsTrigger value="endpoints" className="data-[state=active]:gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium">Endpoints</TabsTrigger>
-            <TabsTrigger value="examples" className="data-[state=active]:gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium">Examples</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-muted">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Overview</TabsTrigger>
+            <TabsTrigger value="authentication" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Authentication</TabsTrigger>
+            <TabsTrigger value="endpoints" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Endpoints</TabsTrigger>
+            <TabsTrigger value="examples" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Examples</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">
-            <Card className="glass-effect border-0 shadow-soft hover-lift">
+            <Card className="border border-border hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
                   <Code className="w-6 h-6" />
@@ -112,7 +112,7 @@ const ApiDocs = () => {
               <CardContent className="space-y-6 text-foreground">
                 <div>
                   <h3 className="font-semibold mb-3 text-lg">Base URL</h3>
-                  <code className="bg-muted px-4 py-2 rounded-lg text-sm shadow-soft">https://api.cognidoc.com</code>
+                  <code className="bg-muted px-4 py-2 rounded-lg text-sm">https://api.cognidoc.com</code>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-3 text-lg">Content Type</h3>
@@ -125,7 +125,7 @@ const ApiDocs = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-effect border-0 shadow-soft hover-lift">
+            <Card className="border border-border hover-lift">
               <CardHeader>
                 <CardTitle className="text-foreground text-2xl">Available Endpoints</CardTitle>
                 <CardDescription className="text-muted-foreground text-lg">
@@ -135,11 +135,11 @@ const ApiDocs = () => {
               <CardContent>
                 <div className="grid gap-4">
                   {endpoints.map((endpoint, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-6 rounded-xl glass-effect hover:shadow-medium transition-all duration-300">
-                      <endpoint.icon className="w-6 h-6 text-primary" />
+                    <div key={index} className="flex items-center space-x-4 p-6 rounded-xl bg-accent hover:bg-accent/80 transition-colors">
+                      <endpoint.icon className="w-6 h-6 text-foreground" />
                       <div className="flex-1">
                         <div className="flex items-center space-x-3">
-                          <Badge variant={endpoint.method === 'POST' ? 'default' : 'destructive'} className="text-xs shadow-soft">
+                          <Badge variant={endpoint.method === 'POST' ? 'default' : 'destructive'} className="text-xs">
                             {endpoint.method}
                           </Badge>
                           <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
@@ -154,7 +154,7 @@ const ApiDocs = () => {
           </TabsContent>
 
           <TabsContent value="authentication" className="space-y-8">
-            <Card className="glass-effect border-0 shadow-soft hover-lift">
+            <Card className="border border-border hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
                   <Key className="w-6 h-6" />
@@ -171,7 +171,7 @@ const ApiDocs = () => {
                     CogniDoc uses Bearer token authentication. Your API token contains session information, so you only need to include it in the Authorization header.
                   </p>
                   
-                  <div className="glass-effect p-6 rounded-xl shadow-soft">
+                  <div className="bg-accent p-6 rounded-xl">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-medium text-foreground">Authorization Header</span>
                       <Button
@@ -186,7 +186,7 @@ const ApiDocs = () => {
                     <code className="text-sm text-foreground">Authorization: Bearer YOUR_API_TOKEN</code>
                   </div>
                   
-                  <div className="mt-6 p-6 bg-primary/10 rounded-xl border border-primary/20 shadow-soft">
+                  <div className="mt-6 p-6 bg-muted rounded-xl border">
                     <p className="text-sm text-foreground">
                       <strong>Note:</strong> No Session-ID header is required when using API tokens. The token automatically identifies your session.
                     </p>
@@ -199,7 +199,7 @@ const ApiDocs = () => {
                     Generate your API token from the CogniDoc application. Each token is tied to a specific session.
                   </p>
                   <Link to="/app">
-                    <Button className="gradient-primary text-white shadow-medium hover-lift focus-ring">
+                    <Button className="bg-foreground text-background hover:bg-foreground/90 focus-ring">
                       <Key className="w-4 h-4 mr-2" />
                       Generate Token
                       <ExternalLink className="w-4 h-4 ml-2" />
@@ -211,7 +211,7 @@ const ApiDocs = () => {
           </TabsContent>
 
           <TabsContent value="endpoints" className="space-y-8">
-            <Card className="glass-effect border-0 shadow-soft hover-lift">
+            <Card className="border border-border hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
                   <Code className="w-6 h-6" />
@@ -223,9 +223,9 @@ const ApiDocs = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {endpoints.map((endpoint, index) => (
-                  <div key={index} className="glass-effect rounded-xl p-6 hover:shadow-medium transition-all duration-300">
+                  <div key={index} className="bg-accent rounded-xl p-6 hover:bg-accent/80 transition-colors">
                     <div className="flex items-center space-x-4">
-                      <endpoint.icon className="w-6 h-6 text-primary" />
+                      <endpoint.icon className="w-6 h-6 text-foreground" />
                       <div>
                         <h4 className="font-semibold text-foreground text-lg">{endpoint.method} {endpoint.path}</h4>
                         <p className="text-sm text-muted-foreground">{endpoint.description}</p>
@@ -238,7 +238,7 @@ const ApiDocs = () => {
           </TabsContent>
 
           <TabsContent value="examples" className="space-y-8">
-            <Card className="glass-effect border-0 shadow-soft hover-lift">
+            <Card className="border border-border hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
                   <Code className="w-6 h-6" />
@@ -252,7 +252,7 @@ const ApiDocs = () => {
                 <div className="space-y-8">
                   <div>
                     <h3 className="font-semibold text-foreground text-xl mb-4">Python</h3>
-                    <div className="glass-effect p-6 rounded-xl shadow-soft">
+                    <div className="bg-accent p-6 rounded-xl">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-sm font-medium text-foreground">Example Code</span>
                         <Button
@@ -280,7 +280,7 @@ print(response.json())`
                           <Copy className="w-4 h-4" />
                         </Button>
                       </div>
-                      <code className="text-sm text-foreground block whitespace-pre-wrap custom-scrollbar">
+                      <code className="text-sm text-foreground block whitespace-pre-wrap">
                         {`import requests
 
 url = "https://api.cognidoc.com/query/askQuery"
@@ -302,7 +302,7 @@ print(response.json())`}
 
                   <div>
                     <h3 className="font-semibold text-foreground text-xl mb-4">JavaScript</h3>
-                    <div className="glass-effect p-6 rounded-xl shadow-soft">
+                    <div className="bg-accent p-6 rounded-xl">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-sm font-medium text-foreground">Example Code</span>
                         <Button
@@ -334,7 +334,7 @@ axios.post(url, payload, { headers: headers })
                           <Copy className="w-4 h-4" />
                         </Button>
                       </div>
-                      <code className="text-sm text-foreground block whitespace-pre-wrap custom-scrollbar">
+                      <code className="text-sm text-foreground block whitespace-pre-wrap">
                         {`const axios = require('axios');
 
 const url = "https://api.cognidoc.com/query/askQuery";
