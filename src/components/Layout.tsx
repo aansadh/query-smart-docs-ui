@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
 import { apiService } from '@/services/api';
 import { Link } from 'react-router-dom';
+import { UserButton, useUser } from '@clerk/clerk-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ interface LayoutProps {
 const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onViewChange: (view: string) => void }) => {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
+  const { user } = useUser();
 
   const menuItems = [
     { id: 'dashboard', title: 'Dashboard', icon: Bot, description: 'Session overview' },
@@ -32,17 +34,12 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
       await apiService.deleteSession();
       localStorage.clear();
       toast({
-        title: "Logged out",
-        description: "Session ended successfully",
+        title: "Session ended",
+        description: "Your session has been terminated",
       });
       onViewChange('dashboard');
     } catch (error) {
-      console.error('Logout error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to end session properly",
-        variant: "destructive",
-      });
+      console.error('Session cleanup error:', error);
     }
   };
 
@@ -51,8 +48,8 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
   };
 
   // Get current session info from localStorage
-  const currentSessionId = localStorage.getItem('currentSessionId') || 'session-1';
-  const currentSessionName = localStorage.getItem('currentSessionName') || 'Research Papers';
+  const currentSessionId = localStorage.getItem('current_session_id') || 'No active session';
+  const currentSessionName = localStorage.getItem('current_session_name') || 'Default Session';
 
   return (
     <Sidebar className="border-r border-border">
@@ -132,9 +129,9 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         <div className="space-y-4">
           <div className="flex items-center space-x-3 text-sm p-3 rounded-lg bg-accent">
             <User className="w-4 h-4 text-muted-foreground" />
-            <div>
-              <div className="font-medium text-foreground">{currentSessionName}</div>
-              <div className="text-xs text-muted-foreground">ID: {currentSessionId}</div>
+            <div className="flex-1">
+              <div className="font-medium text-foreground">{user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User'}</div>
+              <div className="text-xs text-muted-foreground truncate">Session: {currentSessionId.substring(0, 12)}...</div>
             </div>
           </div>
           <div className="flex items-center justify-between">
@@ -146,14 +143,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleLogout}
-              className="text-muted-foreground hover:text-destructive focus-ring"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </SidebarFooter>

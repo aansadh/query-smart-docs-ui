@@ -5,12 +5,27 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import { apiService } from "@/services/api";
 import Landing from "./pages/Landing";
 import ApiDocs from "./pages/ApiDocs";
 import Index from "./pages/Index";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    apiService.setAuth(getToken);
+  }, [getToken]);
+
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -19,13 +34,25 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/docs" element={<ApiDocs />} />
-            <Route path="/app" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthWrapper>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/docs" element={<ApiDocs />} />
+              <Route path="/sign-in" element={<SignInPage />} />
+              <Route path="/sign-up" element={<SignUpPage />} />
+              <Route path="/app" element={
+                <>
+                  <SignedIn>
+                    <Index />
+                  </SignedIn>
+                  <SignedOut>
+                    <SignInPage />
+                  </SignedOut>
+                </>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthWrapper>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
