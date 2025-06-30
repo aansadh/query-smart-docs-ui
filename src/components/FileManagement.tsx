@@ -1,50 +1,42 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { FileText, Trash2, Search, Calendar, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiService } from '@/services/api';
-
-interface FileItem {
-  id: string;
-  name: string;
-  type: 'pdf' | 'text' | 'web';
-  size?: string;
-  created_at: string;
-  status: 'active' | 'processing' | 'error';
-}
+import { apiService, FileInfo } from '@/services/api';
 
 export const FileManagement = () => {
-  const [files, setFiles] = useState<FileItem[]>([
-    // Mock data - in a real app, this would be fetched from the API
-    {
-      id: '1',
-      name: 'Research Paper.pdf',
-      type: 'pdf',
-      size: '2.3 MB',
-      created_at: '2024-01-15T10:30:00Z',
-      status: 'active',
-    },
-    {
-      id: '2',
-      name: 'Meeting Notes',
-      type: 'text',
-      created_at: '2024-01-14T15:45:00Z',
-      status: 'active',
-    },
-    {
-      id: '3',
-      name: 'Wikipedia Article',
-      type: 'web',
-      created_at: '2024-01-13T09:20:00Z',
-      status: 'active',
-    },
-  ]);
+  const [files, setFiles] = useState<FileInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  const currentSessionId = localStorage.getItem('current_session_id');
+
+  useEffect(() => {
+    loadFiles();
+  }, []);
+
+  const loadFiles = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedFiles = await apiService.getFiles();
+      setFiles(fetchedFiles);
+    } catch (error) {
+      console.error('Failed to load files:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load files. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDeleteFile = async (fileId: string, fileName: string) => {
     setDeletingFiles(prev => new Set(prev).add(fileId));
@@ -95,20 +87,7 @@ export const FileManagement = () => {
       case 'web':
         return <FileText className="w-5 h-5 text-green-600" />;
       default:
-        return <FileText className="w-5 h-5 text-gray-600" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Active</span>;
-      case 'processing':
-        return <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Processing</span>;
-      case 'error':
-        return <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Error</span>;
-      default:
-        return null;
+        return <FileText className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -125,6 +104,41 @@ export const FileManagement = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5" />
+              <span>File Management</span>
+            </CardTitle>
+            <CardDescription>
+              View, search, and manage your uploaded documents and content
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        
+        {currentSessionId && (
+          <Card className="bg-accent/20 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="px-3 py-1">
+                  Current Session: {currentSessionId.substring(0, 12)}...
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="ml-2">Loading files...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <Card>
@@ -139,9 +153,21 @@ export const FileManagement = () => {
         </CardHeader>
       </Card>
 
+      {currentSessionId && (
+        <Card className="bg-accent/20 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="px-3 py-1">
+                Current Session: {currentSessionId.substring(0, 12)}...
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex items-center space-x-4">
         <div className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search files..."
             value={searchTerm}
@@ -149,7 +175,7 @@ export const FileManagement = () => {
             className="pl-9"
           />
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           {filteredFiles.length} of {files.length} files
         </div>
       </div>
@@ -158,11 +184,11 @@ export const FileManagement = () => {
         <Card>
           <CardContent className="py-12">
             <div className="text-center">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 {searchTerm ? 'No files found' : 'No files uploaded'}
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchTerm 
                   ? `No files match "${searchTerm}". Try a different search term.`
                   : 'Upload some documents or add text content to get started.'
@@ -186,10 +212,9 @@ export const FileManagement = () => {
                     {getFileIcon(file.type)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <h4 className="font-medium text-gray-900 truncate">{file.name}</h4>
-                        {getStatusBadge(file.status)}
+                        <h4 className="font-medium text-foreground truncate">{file.name}</h4>
                       </div>
-                      <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 mt-1 text-sm text-muted-foreground">
                         <span>{getTypeLabel(file.type)}</span>
                         {file.size && <span>{file.size}</span>}
                         <div className="flex items-center space-x-1">
@@ -206,7 +231,7 @@ export const FileManagement = () => {
                       size="sm"
                       onClick={() => handleDeleteFile(file.id, file.name)}
                       disabled={deletingFiles.has(file.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                     >
                       {deletingFiles.has(file.id) ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -222,17 +247,17 @@ export const FileManagement = () => {
         </div>
       )}
 
-      <Card className="bg-orange-50 border-orange-200">
+      <Card className="bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800">
         <CardContent className="p-4">
           <div className="flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-medium text-orange-900">File Management Notes</h4>
-              <ul className="text-sm text-orange-700 mt-1 space-y-1">
+              <h4 className="font-medium text-orange-900 dark:text-orange-100">File Management Notes</h4>
+              <ul className="text-sm text-orange-700 dark:text-orange-300 mt-1 space-y-1">
                 <li>• Deleting files will remove them from your knowledge base permanently</li>
                 <li>• File search looks through file names and types</li>
-                <li>• Processing status indicates files are being indexed</li>
-                <li>• Error status may require re-uploading the file</li>
+                <li>• All files are associated with your current session</li>
+                <li>• Switch sessions to view files from other sessions</li>
               </ul>
             </div>
           </div>

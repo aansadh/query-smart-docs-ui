@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Copy, Eye, EyeOff, Key, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
+import { apiService } from '@/services/api';
 
 export const TokenGeneration = () => {
   const { toast } = useToast();
@@ -14,13 +15,13 @@ export const TokenGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isTokenVisible, setIsTokenVisible] = useState(false);
 
+  const currentSessionId = localStorage.getItem('current_session_id');
+
   const generateToken = async () => {
     setIsGenerating(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const token = `cognidoc_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-      setGeneratedToken(token);
+      const response = await apiService.createToken();
+      setGeneratedToken(response.token);
       setIsTokenVisible(true);
       
       toast({
@@ -28,6 +29,7 @@ export const TokenGeneration = () => {
         description: "Your API token has been generated successfully. This is the only time it will be shown.",
       });
     } catch (error) {
+      console.error('Token generation error:', error);
       toast({
         title: "Error",
         description: "Failed to generate token. Please try again.",
@@ -55,13 +57,25 @@ export const TokenGeneration = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
           Generate API Token
         </h1>
         <p className="text-muted-foreground">
           Create a secure token to access CogniDoc API programmatically
         </p>
       </div>
+
+      {currentSessionId && (
+        <Card className="bg-accent/20 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="px-3 py-1">
+                Current Session: {currentSessionId.substring(0, 12)}...
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-primary/20">
         <CardHeader className="space-y-3">
@@ -86,7 +100,7 @@ export const TokenGeneration = () => {
               <Button 
                 onClick={generateToken} 
                 disabled={isGenerating}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-foreground text-background hover:bg-foreground/90"
                 size="lg"
               >
                 {isGenerating ? (
@@ -174,11 +188,15 @@ export const TokenGeneration = () => {
             <div className="bg-muted p-3 rounded-lg font-mono text-xs overflow-x-auto">
               curl -H "Authorization: Bearer YOUR_TOKEN" \<br />
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-H "Session-ID: YOUR_SESSION_ID" \<br />
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://api.cognidoc.com/query/askQuery
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http://localhost:8000/query/askQuery
             </div>
             <p className="text-muted-foreground">
               For complete API documentation and examples, visit the{' '}
-              <Button variant="link" className="p-0 h-auto text-primary">
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-primary"
+                onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-api-docs'))}
+              >
                 API Documentation
               </Button>{' '}
               section.

@@ -1,164 +1,252 @@
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, MessageSquare, Upload, Globe, Key, BarChart3, Clock, Database } from 'lucide-react';
-import { SessionManager } from '@/components/SessionManager';
-import { useState } from 'react';
+import { SessionManager } from './SessionManager';
+import { Bot, FileText, MessageSquare, Globe, TrendingUp, Clock, Users, Activity } from 'lucide-react';
+import { apiService } from '@/services/api';
 
 interface DashboardProps {
-  onViewChange: (view: string) => void;
+  currentSessionId: string | null;
+  onSessionChange: (sessionId: string) => void;
 }
 
-export const Dashboard = ({ onViewChange }: DashboardProps) => {
-  const [currentSessionId, setCurrentSessionId] = useState<string>('session-1');
+export const Dashboard = ({ currentSessionId, onSessionChange }: DashboardProps) => {
+  const [stats, setStats] = useState({
+    totalSessions: 0,
+    totalFiles: 0,
+    totalQueries: 0,
+    isLoading: true,
+  });
 
-  const quickActions = [
-    {
-      title: "Upload Documents",
-      description: "Add PDFs or text to your session",
-      icon: Upload,
-      action: "upload",
-      color: "from-emerald-500 to-emerald-600"
-    },
-    {
-      title: "Ask Questions",
-      description: "Query your documents with AI",
-      icon: MessageSquare,
-      action: "query",
-      color: "from-violet-500 to-violet-600"
-    },
-    {
-      title: "Web Scraping",
-      description: "Import content from URLs",
-      icon: Globe,
-      action: "scrape",
-      color: "from-orange-500 to-orange-600"
-    },
-    {
-      title: "Generate Token",
-      description: "Create API access token",
-      icon: Key,
-      action: "token",
-      color: "from-rose-500 to-rose-600"
+  const currentSession = localStorage.getItem('current_session_id');
+
+  useEffect(() => {
+    loadStats();
+  }, [currentSessionId]);
+
+  const loadStats = async () => {
+    try {
+      setStats(prev => ({ ...prev, isLoading: true }));
+      
+      // Load sessions
+      const sessions = await apiService.getSessions();
+      
+      // Load files for current session
+      let files = [];
+      if (currentSessionId) {
+        files = await apiService.getFiles();
+      }
+      
+      setStats({
+        totalSessions: sessions.length,
+        totalFiles: files.length,
+        totalQueries: 0, // This would need to be tracked in the backend
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Failed to load dashboard stats:', error);
+      setStats(prev => ({ ...prev, isLoading: false }));
     }
-  ];
+  };
 
-  const sessionStats = [
-    { label: "Documents", value: "12", icon: FileText },
-    { label: "Queries", value: "47", icon: MessageSquare },
-    { label: "Sessions", value: "3", icon: Database },
-    { label: "Uptime", value: "99.9%", icon: Clock }
+  const features = [
+    {
+      title: 'Upload Documents',
+      description: 'Add PDF files and text content to your knowledge base',
+      icon: <FileText className="w-5 h-5" />,
+      action: 'upload',
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Ask Questions',
+      description: 'Query your documents using natural language',
+      icon: <MessageSquare className="w-5 h-5" />,
+      action: 'query',
+      color: 'text-green-600',
+    },
+    {
+      title: 'Web Scraping',
+      description: 'Import content directly from web URLs',
+      icon: <Globe className="w-5 h-5" />,
+      action: 'scrape',
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Manage Files',
+      description: 'View and organize your uploaded documents',
+      icon: <Activity className="w-5 h-5" />,
+      action: 'files',
+      color: 'text-orange-600',
+    },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold text-foreground">
           Welcome to CogniDoc
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Your AI-powered document assistant. Upload documents, ask questions, and extract insights with advanced AI technology.
+          Your AI-powered document assistant. Upload documents, ask questions, and get intelligent insights.
         </p>
       </div>
 
+      {/* Current Session Display */}
+      {currentSession && (
+        <Card className="bg-accent/20 border-primary/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Bot className="w-6 h-6 text-primary" />
+                <div>
+                  <h3 className="font-semibold text-foreground">Active Session</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Session ID: {currentSession.substring(0, 12)}...
+                  </p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                Active
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+            <Users className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              {stats.isLoading ? '...' : stats.totalSessions}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Document processing sessions
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Files in Session</CardTitle>
+            <FileText className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              {stats.isLoading ? '...' : stats.totalFiles}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Documents in current session
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Queries Processed</CardTitle>
+            <TrendingUp className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">
+              {stats.isLoading ? '...' : stats.totalQueries}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Questions answered by AI
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Session Management */}
-      <Card className="border-primary/20">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="w-5 h-5 text-primary" />
-            Session Management
+          <CardTitle className="flex items-center space-x-2">
+            <Bot className="w-5 h-5" />
+            <span>Session Management</span>
           </CardTitle>
           <CardDescription>
-            Manage your document sessions. Each session isolates your documents and conversation history.
+            Create and manage your document processing sessions
           </CardDescription>
         </CardHeader>
         <CardContent>
           <SessionManager 
-            currentSessionId={currentSessionId}
-            onSessionChange={setCurrentSessionId}
+            currentSessionId={currentSessionId} 
+            onSessionChange={onSessionChange}
           />
         </CardContent>
       </Card>
 
-      {/* Session Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {sessionStats.map((stat, index) => (
-          <Card key={index} className="border-border/50 hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <stat.icon className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Quick Actions */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-primary" />
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {quickActions.map((action, index) => (
-            <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-border/50 cursor-pointer" onClick={() => onViewChange(action.action)}>
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <action.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                      {action.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {action.description}
-                    </p>
-                    <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      Get Started
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Features Overview */}
-      <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+      <Card>
         <CardHeader>
-          <CardTitle>Platform Features</CardTitle>
+          <CardTitle>Quick Actions</CardTitle>
           <CardDescription>
-            Discover what makes CogniDoc powerful for document intelligence
+            Get started with these common tasks
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Smart Document Processing</h4>
-              <p className="text-sm text-muted-foreground">
-                Advanced AI extracts and indexes content from PDFs and text documents for instant searchability.
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {features.map((feature, index) => (
+              <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className={`${feature.color}`}>
+                      {feature.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-foreground text-sm">{feature.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 w-full"
+                        onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-' + feature.action))}
+                      >
+                        Get Started
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Getting Started Guide */}
+      <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+        <CardContent className="p-6">
+          <div className="flex items-start space-x-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Clock className="w-5 h-5 text-primary" />
             </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Natural Language Queries</h4>
-              <p className="text-sm text-muted-foreground">
-                Ask questions in plain English and get precise, contextual answers from your documents.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Session Isolation</h4>
-              <p className="text-sm text-muted-foreground">
-                Organize documents in separate sessions with independent contexts and conversation histories.
-              </p>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-2">Getting Started</h3>
+              <ol className="text-sm text-muted-foreground space-y-2">
+                <li className="flex items-center space-x-2">
+                  <span className="w-5 h-5 bg-primary/20 text-primary rounded-full flex items-center justify-center text-xs font-medium">1</span>
+                  <span>Create or select a session to organize your documents</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-5 h-5 bg-primary/20 text-primary rounded-full flex items-center justify-center text-xs font-medium">2</span>
+                  <span>Upload PDFs, add text content, or scrape web pages</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-5 h-5 bg-primary/20 text-primary rounded-full flex items-center justify-center text-xs font-medium">3</span>
+                  <span>Ask questions about your documents using natural language</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-5 h-5 bg-primary/20 text-primary rounded-full flex items-center justify-center text-xs font-medium">4</span>
+                  <span>Generate API tokens to integrate with your applications</span>
+                </li>
+              </ol>
             </div>
           </div>
         </CardContent>

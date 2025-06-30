@@ -1,5 +1,6 @@
 
 import { useAuth } from '@clerk/clerk-react';
+import axios, { AxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -28,6 +29,7 @@ export interface FileInfo {
   name: string;
   type: string;
   created_at: string;
+  size?: string;
 }
 
 export class ApiService {
@@ -52,8 +54,8 @@ export class ApiService {
     localStorage.removeItem('current_session_id');
   }
 
-  private async getHeaders(): Promise<HeadersInit> {
-    const headers: HeadersInit = {
+  private async getHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
@@ -71,8 +73,8 @@ export class ApiService {
     return headers;
   }
 
-  private async getFileHeaders(): Promise<HeadersInit> {
-    const headers: HeadersInit = {};
+  private async getFileHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {};
 
     if (this.getToken) {
       const token = await this.getToken();
@@ -89,99 +91,72 @@ export class ApiService {
   }
 
   async createToken(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/token/new-token`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.post(`${API_BASE_URL}/token/new-token`, {}, { headers });
+    return response.data;
   }
 
   async createSession(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/session/new-session`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.post(`${API_BASE_URL}/session/new-session`, {}, { headers });
+    return response.data;
   }
 
   async getSessions(): Promise<Session[]> {
-    const response = await fetch(`${API_BASE_URL}/session/get-sessions`, {
-      method: 'GET',
-      headers: await this.getHeaders(),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.get(`${API_BASE_URL}/session/get-sessions`, { headers });
+    return response.data;
   }
 
   async deleteSession(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/session/delete-session`, {
-      method: 'DELETE',
-      headers: await this.getHeaders(),
-    });
+    const headers = await this.getHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/session/delete-session`, { headers });
     this.clearSession();
-    return response.json();
+    return response.data;
   }
 
   async uploadText(document: TextDocument): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/ingest/upload-text`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-      body: JSON.stringify(document),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.post(`${API_BASE_URL}/ingest/upload-text`, document, { headers });
+    return response.data;
   }
 
   async uploadPdf(file: File): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
-
-    const response = await fetch(`${API_BASE_URL}/ingest/upload-pdf`, {
-      method: 'POST',
-      headers: await this.getFileHeaders(),
-      body: formData,
-    });
-    return response.json();
+    const headers = await this.getFileHeaders();
+    const response = await axios.post(`${API_BASE_URL}/ingest/upload-pdf`, formData, { headers });
+    return response.data;
   }
 
   async getFiles(): Promise<FileInfo[]> {
-    const response = await fetch(`${API_BASE_URL}/file/`, {
-      method: 'GET',
-      headers: await this.getHeaders(),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.get(`${API_BASE_URL}/file/`, { headers });
+    return response.data;
   }
 
   async deleteFile(fileId: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/ingest/delete-file/${fileId}`, {
-      method: 'DELETE',
-      headers: await this.getHeaders(),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/ingest/delete-file/${fileId}`, { headers });
+    return response.data;
   }
 
   async askQuery(query: QueryRequest): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/query/askQuery`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-      body: JSON.stringify(query),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.post(`${API_BASE_URL}/query/askQuery`, query, { headers });
+    return response.data;
   }
 
   async scrapeUrl(scrapeRequest: ScrapeRequest): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/webscrape/`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-      body: JSON.stringify(scrapeRequest),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.post(`${API_BASE_URL}/webscrape/`, scrapeRequest, { headers });
+    return response.data;
   }
 
   async healthCheck(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/`, {
-      method: 'GET',
-      headers: await this.getHeaders(),
-    });
-    return response.json();
+    const headers = await this.getHeaders();
+    const response = await axios.get(`${API_BASE_URL}/`, { headers });
+    return response.data;
   }
 }
 

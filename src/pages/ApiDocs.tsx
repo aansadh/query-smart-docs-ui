@@ -1,367 +1,252 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Code, Key, FileText, MessageSquare, Globe, Copy, ExternalLink, Bot } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Code, Globe, Key, FileText, MessageSquare, Trash2, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ApiDocs = () => {
-  const { toast } = useToast();
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "Code snippet has been copied to your clipboard.",
-    });
-  };
-
   const endpoints = [
     {
       method: 'POST',
-      path: '/ingest/uploadPdf',
-      description: 'Upload a PDF file for processing',
-      icon: FileText
+      path: '/session/new-session',
+      description: 'Create a new session',
+      icon: <Key className="w-4 h-4" />,
+    },
+    {
+      method: 'GET',
+      path: '/session/get-sessions',
+      description: 'Get all user sessions',
+      icon: <Key className="w-4 h-4" />,
+    },
+    {
+      method: 'DELETE',
+      path: '/session/delete-session',
+      description: 'Delete current session',
+      icon: <Trash2 className="w-4 h-4" />,
     },
     {
       method: 'POST',
-      path: '/ingest/uploadText',
-      description: 'Upload text content for processing',
-      icon: FileText
+      path: '/ingest/upload-text',
+      description: 'Upload text content',
+      icon: <FileText className="w-4 h-4" />,
+    },
+    {
+      method: 'POST',
+      path: '/ingest/upload-pdf',
+      description: 'Upload PDF file',
+      icon: <Upload className="w-4 h-4" />,
     },
     {
       method: 'POST',
       path: '/query/askQuery',
-      description: 'Ask questions about uploaded documents',
-      icon: MessageSquare
+      description: 'Ask questions about your documents',
+      icon: <MessageSquare className="w-4 h-4" />,
     },
     {
       method: 'POST',
       path: '/webscrape/',
-      description: 'Scrape content from web URLs',
-      icon: Globe
+      description: 'Scrape content from URLs',
+      icon: <Globe className="w-4 h-4" />,
     },
     {
-      method: 'DELETE',
-      path: '/ingest/deleteFile/{file_id}',
-      description: 'Delete a specific file from the session',
-      icon: FileText
-    }
+      method: 'GET',
+      path: '/file/',
+      description: 'Get all files in session',
+      icon: <FileText className="w-4 h-4" />,
+    },
   ];
+
+  const getMethodColor = (method: string) => {
+    switch (method) {
+      case 'GET':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'POST':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'DELETE':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-background/80 backdrop-blur-xl z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Bot className="w-6 h-6 text-background" />
-              </div>
-              <h1 className="text-xl font-bold text-foreground">CogniDoc</h1>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link to="/">
-                <Button variant="ghost" className="text-foreground hover:text-foreground/80 focus-ring">
-                  Home
-                </Button>
-              </Link>
-              <Link to="/app">
-                <Button className="bg-foreground text-background hover:bg-foreground/90 focus-ring">
-                  Try CogniDoc
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-6xl mx-auto px-6 py-32">
+      <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <Badge variant="secondary" className="mb-6 px-6 py-2">
-            API Documentation
-          </Badge>
-          <h1 className="text-5xl font-bold mb-6 text-foreground">CogniDoc API</h1>
-          <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
-            Integrate CogniDoc's AI-powered document analysis into your applications with our simple, powerful REST API.
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            CogniDoc API Documentation
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Integrate CogniDoc's AI-powered document processing into your applications
           </p>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 bg-muted">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Overview</TabsTrigger>
-            <TabsTrigger value="authentication" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Authentication</TabsTrigger>
-            <TabsTrigger value="endpoints" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Endpoints</TabsTrigger>
-            <TabsTrigger value="examples" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Examples</TabsTrigger>
-          </TabsList>
+        {/* Quick Links */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <Key className="w-8 h-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Authentication</h3>
+              <p className="text-sm text-muted-foreground mb-4">Generate API tokens for secure access</p>
+              <Link to="/app">
+                <Button variant="outline" size="sm">Generate Token</Button>
+              </Link>
+            </CardContent>
+          </Card>
+          
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <Code className="w-8 h-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Base URL</h3>
+              <p className="text-sm text-muted-foreground mb-4">All API requests use this endpoint</p>
+              <code className="bg-muted px-2 py-1 rounded text-xs">http://localhost:8000</code>
+            </CardContent>
+          </Card>
+          
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <Globe className="w-8 h-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Headers</h3>
+              <p className="text-sm text-muted-foreground mb-4">Required headers for all requests</p>
+              <div className="text-xs space-y-1">
+                <div>Authorization: Bearer TOKEN</div>
+                <div>Session-ID: SESSION_ID</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          <TabsContent value="overview" className="space-y-8">
-            <Card className="border border-border hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
-                  <Code className="w-6 h-6" />
-                  <span>Getting Started</span>
-                </CardTitle>
-                <CardDescription className="text-muted-foreground text-lg">
-                  Learn how to integrate with the CogniDoc API
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 text-foreground">
+        {/* API Endpoints */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>API Endpoints</CardTitle>
+            <CardDescription>
+              Complete list of available endpoints and their functionality
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="space-y-0">
+              {endpoints.map((endpoint, index) => (
+                <div key={index} className="flex items-center justify-between p-4 border-b last:border-b-0">
+                  <div className="flex items-center space-x-4">
+                    <Badge className={`${getMethodColor(endpoint.method)} font-mono text-xs`}>
+                      {endpoint.method}
+                    </Badge>
+                    <code className="font-mono text-sm text-foreground">{endpoint.path}</code>
+                    <div className="flex items-center space-x-2">
+                      {endpoint.icon}
+                      <span className="text-sm text-muted-foreground">{endpoint.description}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Authentication Example */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Authentication Example</CardTitle>
+            <CardDescription>
+              How to authenticate your requests using Bearer tokens
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-muted p-4 rounded-lg">
+              <pre className="text-sm text-foreground overflow-x-auto">
+{`curl -X POST "http://localhost:8000/query/askQuery" \\
+  -H "Authorization: Bearer YOUR_API_TOKEN" \\
+  -H "Session-ID: YOUR_SESSION_ID" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "What is the main topic of my documents?"}'`}
+              </pre>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Request/Response Examples */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Upload Text Example</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-3 text-lg">Base URL</h3>
-                  <code className="bg-muted px-4 py-2 rounded-lg text-sm">https://api.cognidoc.com</code>
+                  <h4 className="font-medium text-sm mb-2">Request:</h4>
+                  <div className="bg-muted p-3 rounded text-xs">
+                    <pre className="text-foreground">
+{`POST /ingest/upload-text
+{
+  "text": "Your content here...",
+  "file_name": "Document Title"
+}`}
+                    </pre>
+                  </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-3 text-lg">Content Type</h3>
-                  <p className="text-muted-foreground">All requests should include the header: <code className="bg-muted px-3 py-1 rounded text-sm">Content-Type: application/json</code></p>
+                  <h4 className="font-medium text-sm mb-2">Response:</h4>
+                  <div className="bg-muted p-3 rounded text-xs">
+                    <pre className="text-foreground">
+{`{
+  "file_id": "abc123",
+  "session_id": "xyz789",
+  "status": "processed"
+}`}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Query Example</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-sm mb-2">Request:</h4>
+                  <div className="bg-muted p-3 rounded text-xs">
+                    <pre className="text-foreground">
+{`POST /query/askQuery
+{
+  "query": "Summarize the key points"
+}`}
+                    </pre>
+                  </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-3 text-lg">Response Format</h3>
-                  <p className="text-muted-foreground">All responses are returned in JSON format.</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-border hover-lift">
-              <CardHeader>
-                <CardTitle className="text-foreground text-2xl">Available Endpoints</CardTitle>
-                <CardDescription className="text-muted-foreground text-lg">
-                  Overview of all available API endpoints
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {endpoints.map((endpoint, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-6 rounded-xl bg-accent hover:bg-accent/80 transition-colors">
-                      <endpoint.icon className="w-6 h-6 text-foreground" />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <Badge variant={endpoint.method === 'POST' ? 'default' : 'destructive'} className="text-xs">
-                            {endpoint.method}
-                          </Badge>
-                          <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-2">{endpoint.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="authentication" className="space-y-8">
-            <Card className="border border-border hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
-                  <Key className="w-6 h-6" />
-                  <span>API Authentication</span>
-                </CardTitle>
-                <CardDescription className="text-muted-foreground text-lg">
-                  How to authenticate your API requests
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="text-foreground">
-                  <h3 className="font-semibold mb-4 text-xl">Bearer Token Authentication</h3>
-                  <p className="text-muted-foreground mb-6 text-lg">
-                    CogniDoc uses Bearer token authentication. Your API token contains session information, so you only need to include it in the Authorization header.
-                  </p>
-                  
-                  <div className="bg-accent p-6 rounded-xl">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-foreground">Authorization Header</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard('Authorization: Bearer YOUR_API_TOKEN')}
-                        className="text-muted-foreground hover:text-foreground focus-ring"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <code className="text-sm text-foreground">Authorization: Bearer YOUR_API_TOKEN</code>
-                  </div>
-                  
-                  <div className="mt-6 p-6 bg-muted rounded-xl border">
-                    <p className="text-sm text-foreground">
-                      <strong>Note:</strong> No Session-ID header is required when using API tokens. The token automatically identifies your session.
-                    </p>
+                  <h4 className="font-medium text-sm mb-2">Response:</h4>
+                  <div className="bg-muted p-3 rounded text-xs">
+                    <pre className="text-foreground">
+{`{
+  "answer": "Based on your documents...",
+  "sources": ["doc1", "doc2"],
+  "confidence": 0.95
+}`}
+                    </pre>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-                <div className="text-foreground">
-                  <h3 className="font-semibold mb-4 text-xl">Getting Your API Token</h3>
-                  <p className="text-muted-foreground mb-6 text-lg">
-                    Generate your API token from the CogniDoc application. Each token is tied to a specific session.
-                  </p>
-                  <Link to="/app">
-                    <Button className="bg-foreground text-background hover:bg-foreground/90 focus-ring">
-                      <Key className="w-4 h-4 mr-2" />
-                      Generate Token
-                      <ExternalLink className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="endpoints" className="space-y-8">
-            <Card className="border border-border hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
-                  <Code className="w-6 h-6" />
-                  <span>Available Endpoints</span>
-                </CardTitle>
-                <CardDescription className="text-muted-foreground text-lg">
-                  Explore the list of available API endpoints
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {endpoints.map((endpoint, index) => (
-                  <div key={index} className="bg-accent rounded-xl p-6 hover:bg-accent/80 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <endpoint.icon className="w-6 h-6 text-foreground" />
-                      <div>
-                        <h4 className="font-semibold text-foreground text-lg">{endpoint.method} {endpoint.path}</h4>
-                        <p className="text-sm text-muted-foreground">{endpoint.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="examples" className="space-y-8">
-            <Card className="border border-border hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3 text-foreground text-2xl">
-                  <Code className="w-6 h-6" />
-                  <span>Code Examples</span>
-                </CardTitle>
-                <CardDescription className="text-muted-foreground text-lg">
-                  Explore code examples for different programming languages
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="font-semibold text-foreground text-xl mb-4">Python</h3>
-                    <div className="bg-accent p-6 rounded-xl">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-foreground">Example Code</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(
-                            `import requests
-
-url = "https://api.cognidoc.com/query/askQuery"
-
-payload = {
-    "query": "What is the main topic of this document?"
-}
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer YOUR_API_TOKEN"
-}
-
-response = requests.post(url, json=payload, headers=headers)
-
-print(response.json())`
-                          )}
-                          className="text-muted-foreground hover:text-foreground focus-ring"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <code className="text-sm text-foreground block whitespace-pre-wrap">
-                        {`import requests
-
-url = "https://api.cognidoc.com/query/askQuery"
-
-payload = {
-    "query": "What is the main topic of this document?"
-}
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer YOUR_API_TOKEN"
-}
-
-response = requests.post(url, json=payload, headers=headers)
-
-print(response.json())`}
-                      </code>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-foreground text-xl mb-4">JavaScript</h3>
-                    <div className="bg-accent p-6 rounded-xl">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-foreground">Example Code</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(
-                            `const axios = require('axios');
-
-const url = "https://api.cognidoc.com/query/askQuery";
-
-const payload = {
-    query: "What is the main topic of this document?"
-};
-const headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer YOUR_API_TOKEN"
-};
-
-axios.post(url, payload, { headers: headers })
-.then(response => {
-    console.log(response.data);
-})
-.catch(error => {
-    console.error(error);
-});`
-                          )}
-                          className="text-muted-foreground hover:text-foreground focus-ring"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <code className="text-sm text-foreground block whitespace-pre-wrap">
-                        {`const axios = require('axios');
-
-const url = "https://api.cognidoc.com/query/askQuery";
-
-const payload = {
-    query: "What is the main topic of this document?"
-};
-const headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer YOUR_API_TOKEN"
-};
-
-axios.post(url, payload, { headers: headers })
-.then(response => {
-    console.log(response.data);
-})
-.catch(error => {
-    console.error(error);
-});`}
-                      </code>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Footer */}
+        <div className="text-center mt-12 pt-8 border-t">
+          <p className="text-muted-foreground">
+            Need help? Check out our{' '}
+            <Link to="/app" className="text-primary hover:underline">
+              interactive dashboard
+            </Link>{' '}
+            or generate your first API token to get started.
+          </p>
+        </div>
       </div>
     </div>
   );
