@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -90,9 +89,13 @@ const Landing = () => {
           <Badge variant="secondary" className="mb-6">
             AI-Powered Document Intelligence
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
-            Transform Your Documents with
-            <span className="block text-foreground/80">Intelligent AI</span>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-foreground via-foreground/80 to-foreground/60 bg-clip-text text-transparent">
+              Transform Your Documents with
+            </span>
+            <span className="block bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/40 bg-clip-text text-transparent">
+              Intelligent AI
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Upload, analyze, and query your documents using advanced AI. 

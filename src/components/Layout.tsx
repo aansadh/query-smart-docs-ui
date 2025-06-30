@@ -49,11 +49,10 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
 
   // Get current session info from localStorage
   const currentSessionId = localStorage.getItem('current_session_id') || 'No active session';
-  const currentSessionName = localStorage.getItem('current_session_name') || 'Default Session';
 
   return (
     <Sidebar className="border-r border-border">
-      <SidebarHeader className="p-6 border-b border-border">
+      <SidebarHeader className="p-8 border-b border-border">
         <Link to="/" className="flex items-center space-x-3 group">
           <div className="w-10 h-10 bg-foreground rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
             <Bot className="w-6 h-6 text-background" />
@@ -67,18 +66,18 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         </Link>
       </SidebarHeader>
       
-      <SidebarContent className="px-4 py-6">
+      <SidebarContent className="px-6 py-8">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-6 px-2">
             Session Features
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
                     asChild
-                    className={`w-full justify-start py-3 px-3 rounded-lg transition-colors ${
+                    className={`w-full justify-start py-4 px-4 rounded-lg transition-colors ${
                       currentView === item.id 
                         ? 'bg-foreground text-background' 
                         : 'text-foreground/70 hover:bg-accent hover:text-foreground'
@@ -100,8 +99,8 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-8">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
+        <SidebarGroup className="mt-10">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-6 px-2">
             Resources
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -109,7 +108,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild
-                  className="w-full justify-start py-3 px-3 rounded-lg transition-colors text-foreground/70 hover:bg-accent hover:text-foreground"
+                  className="w-full justify-start py-4 px-4 rounded-lg transition-colors text-foreground/70 hover:bg-accent hover:text-foreground"
                 >
                   <button onClick={() => onViewChange('api-docs')} className="flex items-center space-x-3 text-left">
                     <BookOpen className="w-5 h-5" />
@@ -125,9 +124,9 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-border">
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 text-sm p-3 rounded-lg bg-accent">
+      <SidebarFooter className="p-6 border-t border-border">
+        <div className="space-y-6">
+          <div className="flex items-center space-x-3 text-sm p-4 rounded-lg bg-accent/50">
             <User className="w-4 h-4 text-muted-foreground" />
             <div className="flex-1">
               <div className="font-medium text-foreground">{user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User'}</div>
@@ -152,12 +151,14 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
 };
 
 export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => {
+  const currentSessionId = localStorage.getItem('current_session_id');
+  
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar currentView={currentView} onViewChange={onViewChange} />
         <main className="flex-1 flex flex-col">
-          <header className="px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="px-8 py-6 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors focus-ring" />
@@ -176,9 +177,15 @@ export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => 
                   </p>
                 </div>
               </div>
+              {currentSessionId && (
+                <div className="text-right">
+                  <p className="text-sm font-medium text-foreground">Current Session</p>
+                  <p className="text-xs text-muted-foreground">{currentSessionId.substring(0, 12)}...</p>
+                </div>
+              )}
             </div>
           </header>
-          <div className="flex-1 p-6 animate-slide-in">
+          <div className="flex-1 p-8 animate-slide-in">
             {children}
           </div>
         </main>

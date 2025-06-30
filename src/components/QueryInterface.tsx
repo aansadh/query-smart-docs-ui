@@ -3,7 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Bot, User, Loader2, Upload, Globe, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquare, Send, Bot, User, Loader2, Upload, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '@/services/api';
 
@@ -120,24 +121,33 @@ export const QueryInterface = () => {
     "Who are the main people or organizations discussed?",
   ];
 
+  const currentSessionId = localStorage.getItem('current_session_id');
+
   return (
     <div className="max-w-5xl mx-auto h-[calc(100vh-180px)] flex flex-col">
-      {/* Header - Fixed */}
+      {/* Header with Session Info - Fixed */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-            <MessageSquare className="w-5 h-5 text-primary-foreground" />
+          <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center">
+            <MessageSquare className="w-5 h-5 text-background" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-foreground">Ask Questions</h2>
             <p className="text-muted-foreground">Query your uploaded documents using natural language</p>
           </div>
         </div>
-        {messages.length > 0 && (
-          <Button variant="outline" onClick={clearChat} className="border-border text-foreground">
-            Clear Chat
-          </Button>
-        )}
+        <div className="flex items-center space-x-4">
+          {currentSessionId && (
+            <Badge variant="outline" className="px-3 py-1">
+              Session: {currentSessionId.substring(0, 12)}...
+            </Badge>
+          )}
+          {messages.length > 0 && (
+            <Button variant="outline" onClick={clearChat} className="border-border text-foreground">
+              Clear Chat
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Chat Area - Flexible */}
@@ -146,8 +156,8 @@ export const QueryInterface = () => {
           {messages.length === 0 ? (
             <div className="space-y-8 h-full flex flex-col justify-center">
               <div className="text-center">
-                <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 animate-glow">
-                  <Bot className="w-10 h-10 text-primary-foreground" />
+                <div className="w-20 h-20 bg-foreground rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Bot className="w-10 h-10 text-background" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-3">
                   Start a conversation
@@ -164,7 +174,7 @@ export const QueryInterface = () => {
                     <Button
                       key={index}
                       variant="outline"
-                      className="text-left h-auto p-4 whitespace-normal border-border text-foreground hover:bg-accent hover:border-primary/50 transition-all duration-300"
+                      className="text-left h-auto p-4 whitespace-normal border-border text-foreground hover:bg-accent hover:border-foreground/50 transition-all duration-300"
                       onClick={() => setQuery(example)}
                     >
                       {example}
@@ -183,22 +193,22 @@ export const QueryInterface = () => {
                   <div
                     className={`max-w-[80%] p-4 rounded-2xl ${
                       message.sender === 'user'
-                        ? 'gradient-primary text-primary-foreground shadow-lg'
+                        ? 'bg-foreground text-background shadow-lg'
                         : 'bg-muted/50 text-foreground border border-border/50'
                     }`}
                   >
                     <div className="flex items-start space-x-3">
                       {message.sender === 'bot' && (
-                        <Bot className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                        <Bot className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
                       )}
                       {message.sender === 'user' && (
-                        <User className="w-5 h-5 text-primary-foreground/80 mt-0.5 flex-shrink-0" />
+                        <User className="w-5 h-5 text-background/80 mt-0.5 flex-shrink-0" />
                       )}
                       <div className="flex-1">
                         <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
                         <p
                           className={`text-xs mt-3 ${
-                            message.sender === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                            message.sender === 'user' ? 'text-background/70' : 'text-muted-foreground'
                           }`}
                         >
                           {formatTime(message.timestamp)}
@@ -212,8 +222,8 @@ export const QueryInterface = () => {
                 <div className="flex justify-start">
                   <div className="bg-muted/50 p-4 rounded-2xl border border-border/50">
                     <div className="flex items-center space-x-3">
-                      <Bot className="w-5 h-5 text-primary" />
-                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <Bot className="w-5 h-5 text-foreground" />
+                      <Loader2 className="w-4 h-4 animate-spin text-foreground" />
                       <span className="text-foreground">Thinking...</span>
                     </div>
                   </div>
@@ -224,10 +234,10 @@ export const QueryInterface = () => {
           <div ref={messagesEndRef} />
         </ScrollArea>
         
-        {/* Input Area - Fixed at bottom */}
+        {/* Input Area - Fixed at bottom with consistent sizing */}
         <div className="border-t border-border/50 p-6 bg-background/50 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 items-end">
               <div className="flex-1 relative">
                 <Textarea
                   ref={textareaRef}
@@ -262,8 +272,7 @@ export const QueryInterface = () => {
               <Button
                 type="submit"
                 disabled={!query.trim() || isLoading}
-                className="self-end gradient-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
-                size="lg"
+                className="bg-foreground text-background shadow-lg hover:bg-foreground/90 transition-all duration-300 h-[60px] px-6"
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

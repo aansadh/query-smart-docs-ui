@@ -1,20 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, Eye, AlertTriangle, Search } from 'lucide-react';
+import { Plus, Trash2, Eye, AlertTriangle, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Session {
-  id: string;
-  name: string;
-  createdAt: string;
-  documentsCount: number;
-}
+import { apiService, Session } from '@/services/api';
 
 interface SessionManagerProps {
   currentSessionId: string | null;
@@ -23,27 +17,42 @@ interface SessionManagerProps {
 
 export const SessionManager = ({ currentSessionId, onSessionChange }: SessionManagerProps) => {
   const { toast } = useToast();
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: 'session-1',
-      name: 'Research Papers',
-      createdAt: '2024-01-15',
-      documentsCount: 5
-    },
-    {
-      id: 'session-2',
-      name: 'Legal Documents',
-      createdAt: '2024-01-16',
-      documentsCount: 3
-    }
-  ]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [newSessionName, setNewSessionName] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleCreateSession = () => {
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  const loadSessions = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedSessions = await apiService.getSessions();
+      setSessions(fetchedSessions);
+      
+      // If no current session, set the first one as current
+      if (!currentSessionId && fetchedSessions.length > 0) {
+        const firstSession = fetchedSessions[0];
+        onSessionChange(firstSession._id);
+        apiService.setSessionId(firstSession._id);
+      }
+    } catch (error) {
+      console.error('Failed to load sessions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load sessions",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateSession = async () => {
     if (!newSessionName.trim()) {
       toast({
         title: "Error",
@@ -53,61 +62,102 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       return;
     }
 
-    const newSession: Session = {
-      id: `session-${Date.now()}`,
-      name: newSessionName.trim(),
-      createdAt: new Date().toISOString().split('T')[0],
-      documentsCount: 0
-    };
-
-    setSessions(prev => [newSession, ...prev]);
-    onSessionChange(newSession.id);
-    
-    // Store in localStorage
-    localStorage.setItem('currentSessionId', newSession.id);
-    localStorage.setItem('currentSessionName', newSession.name);
-    
-    setNewSessionName('');
-    setIsCreateDialogOpen(false);
-    
-    toast({
-      title: "Session Created",
-      description: `New session "${newSession.name}" has been created.`,
-    });
+    try {
+      setIsLoading(true);
+      const response = await apiService.createSession();
+      console.log('New session created:', response);
+      
+      // Reload sessions to get the updated list
+      await loadSessions();
+      
+      setNewSessionName('');
+      setIsCreateDialogOpen(false);
+      
+      toast({
+        title: "Session Created",
+        description: `New session has been created successfully.`,
+      });
+    } catch (error) {
+      console.error('Failed to create session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create session",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteSession = (sessionId: string) => {
-    setSessions(prev => prev.filter(s => s.id !== sessionId));
-    setDeleteSessionId(null);
-    
-    if (currentSessionId === sessionId) {
-      const remainingSessions = sessions.filter(s => s.id !== sessionId);
-      if (remainingSessions.length > 0) {
-        onSessionChange(remainingSessions[0].id);
-        localStorage.setItem('currentSessionId', remainingSessions[0].id);
-        localStorage.setItem('currentSessionName', remainingSessions[0].name);
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Set the session to delete as current before deleting
+      apiService.setSessionId(sessionId);
+      await apiService.deleteSession();
+      
+      // Reload sessions
+      await loadSessions();
+      
+      // If we deleted the current session, clear it
+      if (currentSessionId === sessionId) {
+        const remainingSessions = sessions.filter(s => s._id !== sessionId);
+        if (remainingSessions.length > 0) {
+          onSessionChange(remainingSessions[0]._id);
+          apiService.setSessionId(remainingSessions[0]._id);
+        } else {
+          onSessionChange('');
+          apiService.clearSession();
+        }
       }
+      
+      toast({
+        title: "Session Deleted",
+        description: "Session has been permanently deleted.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete session",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    
-    toast({
-      title: "Session Deleted",
-      description: "Session and all associated data have been permanently deleted.",
-      variant: "destructive",
-    });
   };
 
   const handleSessionSwitch = (session: Session) => {
-    onSessionChange(session.id);
-    localStorage.setItem('currentSessionId', session.id);
-    localStorage.setItem('currentSessionName', session.name);
+    onSessionChange(session._id);
+    apiService.setSessionId(session._id);
     setIsViewDialogOpen(false);
+    
+    toast({
+      title: "Session Switched",
+      description: `Switched to session: ${session._id.substring(0, 12)}...`,
+    });
   };
 
-  const currentSession = sessions.find(s => s.id === currentSessionId);
+  const currentSession = sessions.find(s => s._id === currentSessionId);
   const filteredSessions = sessions.filter(session => 
-    session.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.id.toLowerCase().includes(searchQuery.toLowerCase())
+    session._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    session.user_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  if (isLoading && sessions.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span className="ml-2">Loading sessions...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -117,9 +167,9 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg text-foreground">{currentSession.name}</CardTitle>
+                <CardTitle className="text-lg text-foreground">Current Session</CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Session ID: {currentSession.id} • {currentSession.documentsCount} documents
+                  ID: {currentSession._id.substring(0, 12)}... • Created: {formatDate(currentSession.created_at)}
                 </CardDescription>
               </div>
               <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
@@ -134,7 +184,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       <div className="flex flex-wrap gap-3">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gradient-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300">
+            <Button disabled={isLoading} className="bg-foreground text-background hover:bg-foreground/90">
               <Plus className="w-4 h-4 mr-2" />
               New Session
             </Button>
@@ -148,7 +198,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="sessionName" className="text-foreground">Session Name</Label>
+                <Label htmlFor="sessionName" className="text-foreground">Session Name (Optional)</Label>
                 <Input
                   id="sessionName"
                   value={newSessionName}
@@ -162,7 +212,9 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="border-border text-foreground">
                 Cancel
               </Button>
-              <Button onClick={handleCreateSession} className="gradient-primary text-primary-foreground">Create Session</Button>
+              <Button onClick={handleCreateSession} disabled={isLoading} className="bg-foreground text-background">
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Session"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -195,29 +247,30 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
             
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {filteredSessions.map((session) => (
-                <Card key={session.id} className={`transition-all duration-200 border-border ${session.id === currentSessionId ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-accent'}`}>
+                <Card key={session._id} className={`transition-all duration-200 border-border ${session._id === currentSessionId ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-accent'}`}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-foreground">{session.name}</h4>
+                        <h4 className="font-medium text-foreground">Session {session._id.substring(0, 12)}...</h4>
                         <p className="text-sm text-muted-foreground">
-                          Created: {session.createdAt} • {session.documentsCount} documents
+                          Created: {formatDate(session.created_at)}
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        {session.id !== currentSessionId && (
+                        {session._id !== currentSessionId && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleSessionSwitch(session)}
                             className="border-border text-foreground hover:bg-accent"
+                            disabled={isLoading}
                           >
                             Switch
                           </Button>
                         )}
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button size="sm" variant="destructive">
+                            <Button size="sm" variant="destructive" disabled={isLoading}>
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </DialogTrigger>
@@ -228,13 +281,13 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                                 Delete Session
                               </DialogTitle>
                               <DialogDescription className="text-muted-foreground">
-                                Are you sure you want to delete "{session.name}"? This action cannot be undone and all documents and data in this session will be permanently lost.
+                                Are you sure you want to delete this session? This action cannot be undone and all documents and data in this session will be permanently lost.
                               </DialogDescription>
                             </DialogHeader>
                             <DialogFooter>
                               <Button variant="outline" className="border-border text-foreground">Cancel</Button>
-                              <Button variant="destructive" onClick={() => handleDeleteSession(session.id)}>
-                                Delete Session
+                              <Button variant="destructive" onClick={() => handleDeleteSession(session._id)} disabled={isLoading}>
+                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Session"}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
@@ -246,7 +299,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
               ))}
               {filteredSessions.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  No sessions found matching your search.
+                  {sessions.length === 0 ? "No sessions found. Create your first session to get started." : "No sessions found matching your search."}
                 </div>
               )}
             </div>
