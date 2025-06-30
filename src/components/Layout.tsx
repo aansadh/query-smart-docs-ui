@@ -55,11 +55,11 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
   const currentSessionName = localStorage.getItem('currentSessionName') || 'Research Papers';
 
   return (
-    <Sidebar className="border-r border-border/50 backdrop-blur-sm">
-      <SidebarHeader className="p-4 border-b border-border/50">
+    <Sidebar className="glass-effect border-r border-border/30 shadow-soft">
+      <SidebarHeader className="p-6 border-b border-border/30">
         <Link to="/" className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg animate-glow">
-            <Bot className="w-6 h-6 text-primary-foreground" />
+          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-medium animate-glow group-hover:scale-110 transition-all duration-300">
+            <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gradient">
@@ -70,26 +70,32 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         </Link>
       </SidebarHeader>
       
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className="px-4 py-6 space-professional">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
             Session Features
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
                     asChild
-                    className={`w-full justify-start py-3 px-4 rounded-xl transition-all duration-300 hover:bg-accent hover:shadow-sm ${
-                      currentView === item.id ? 'gradient-primary text-primary-foreground shadow-lg' : 'text-foreground/80'
+                    className={`w-full justify-start py-4 px-4 rounded-xl transition-all duration-300 hover:shadow-soft group ${
+                      currentView === item.id 
+                        ? 'gradient-primary text-white shadow-medium' 
+                        : 'text-foreground/80 hover:bg-accent/50'
                     }`}
                   >
                     <button onClick={() => onViewChange(item.id)} className="flex items-center space-x-3 text-left">
-                      <item.icon className={`w-5 h-5 ${currentView === item.id ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                      <item.icon className={`w-5 h-5 transition-colors ${
+                        currentView === item.id ? 'text-white' : 'text-muted-foreground group-hover:text-primary'
+                      }`} />
                       <div>
                         <div className="font-medium">{item.title}</div>
-                        <div className="text-xs opacity-70">{item.description}</div>
+                        <div className={`text-xs ${currentView === item.id ? 'text-white/80' : 'text-muted-foreground'}`}>
+                          {item.description}
+                        </div>
                       </div>
                     </button>
                   </SidebarMenuButton>
@@ -99,22 +105,22 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+        <SidebarGroup className="mt-8">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
             Resources
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild
-                  className="w-full justify-start py-3 px-4 rounded-xl transition-all duration-300 hover:bg-accent hover:shadow-sm text-foreground/80"
+                  className="w-full justify-start py-4 px-4 rounded-xl transition-all duration-300 hover:bg-accent/50 hover:shadow-soft text-foreground/80 group"
                 >
                   <button onClick={() => onViewChange('api-docs')} className="flex items-center space-x-3 text-left">
-                    <BookOpen className="w-5 h-5 text-muted-foreground" />
+                    <BookOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     <div>
                       <div className="font-medium">API Documentation</div>
-                      <div className="text-xs opacity-70">Integration guide</div>
+                      <div className="text-xs text-muted-foreground">Integration guide</div>
                     </div>
                   </button>
                 </SidebarMenuButton>
@@ -124,9 +130,9 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-border/50">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-sm">
+      <SidebarFooter className="p-4 border-t border-border/30">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 text-sm p-3 rounded-xl glass-effect">
             <User className="w-4 h-4 text-muted-foreground" />
             <div>
               <div className="font-medium text-foreground">{currentSessionName}</div>
@@ -138,7 +144,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               variant="ghost" 
               size="sm"
               onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground focus-ring rounded-lg"
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
@@ -146,7 +152,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               variant="ghost" 
               size="sm"
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-destructive"
+              className="text-muted-foreground hover:text-destructive focus-ring rounded-lg"
             >
               <LogOut className="w-4 h-4" />
             </Button>
@@ -163,12 +169,12 @@ export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => 
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar currentView={currentView} onViewChange={onViewChange} />
         <main className="flex-1 flex flex-col">
-          <header className="bg-background/80 backdrop-blur-md px-6 py-4 sticky top-0 z-40">
+          <header className="glass-effect px-6 py-4 sticky top-0 z-40 shadow-soft">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
+                <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors focus-ring" />
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground capitalize">
+                  <h2 className="text-xl font-semibold text-foreground capitalize">
                     {currentView.replace(/([A-Z])/g, ' $1').trim().replace('Api', 'API')}
                   </h2>
                   <p className="text-sm text-muted-foreground">
