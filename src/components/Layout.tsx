@@ -5,7 +5,7 @@ import { FileText, MessageSquare, Upload, Globe, User, LogOut, Bot, BookOpen, Mo
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
-import { apiService } from '@/services/api';
+import { useApi } from '@/hooks/useApi';
 import { Link } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
 
@@ -19,6 +19,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const { user } = useUser();
+  const { makeRequest } = useApi();
 
   const menuItems = [
     { id: 'dashboard', title: 'Dashboard', icon: Bot, description: 'Session overview' },
@@ -31,7 +32,10 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
 
   const handleLogout = async () => {
     try {
-      await apiService.deleteSession();
+      await makeRequest({
+        method: 'DELETE',
+        url: '/session/delete-session',
+      });
       localStorage.clear();
       toast({
         title: "Session ended",
@@ -50,7 +54,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
   const currentSessionId = localStorage.getItem('current_session_id') || 'No active session';
 
   return (
-    <Sidebar className="border-r border-border w-72">
+    <Sidebar className="border-r border-border w-80">
       <SidebarHeader className="p-6 border-b border-border">
         <Link to="/" className="flex items-center space-x-3 group">
           <div className="w-10 h-10 bg-foreground rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -71,7 +75,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
             Session Features
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
@@ -124,7 +128,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
       </SidebarContent>
       
       <SidebarFooter className="p-4 border-t border-border">
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center space-x-3 text-sm p-3 rounded-lg bg-accent/50">
             <User className="w-4 h-4 text-muted-foreground" />
             <div className="flex-1">
@@ -156,7 +160,7 @@ export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => 
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar currentView={currentView} onViewChange={onViewChange} />
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col ml-0">
           <header className="sticky top-0 z-10 px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">

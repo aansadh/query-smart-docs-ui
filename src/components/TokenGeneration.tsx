@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Eye, EyeOff, Key, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiService } from '@/services/api';
+import { useApi } from '@/hooks/useApi';
 
 export const TokenGeneration = () => {
   const { toast } = useToast();
+  const { makeRequest } = useApi();
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isTokenVisible, setIsTokenVisible] = useState(false);
@@ -20,8 +21,11 @@ export const TokenGeneration = () => {
   const generateToken = async () => {
     setIsGenerating(true);
     try {
-      const response = await apiService.createToken();
-      setGeneratedToken(response.token);
+      const response = await makeRequest({
+        method: 'POST',
+        url: '/token/new-token',
+      });
+      setGeneratedToken(response.data.token);
       setIsTokenVisible(true);
       
       toast({
@@ -195,7 +199,7 @@ export const TokenGeneration = () => {
               <Button 
                 variant="link" 
                 className="p-0 h-auto text-primary"
-                onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-api-docs'))}
+                onClick={() => window.open('/api-docs', '_blank')}
               >
                 API Documentation
               </Button>{' '}

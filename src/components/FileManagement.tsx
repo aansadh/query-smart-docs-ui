@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Trash2, Search, Calendar, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiService, FileInfo } from '@/services/api';
+import { useApi } from '@/hooks/useApi';
+import { FileInfo } from '@/services/api';
 
 export const FileManagement = () => {
   const [files, setFiles] = useState<FileInfo[]>([]);
@@ -14,6 +15,7 @@ export const FileManagement = () => {
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { makeRequest } = useApi();
 
   const currentSessionId = localStorage.getItem('current_session_id');
 
@@ -24,8 +26,11 @@ export const FileManagement = () => {
   const loadFiles = async () => {
     try {
       setIsLoading(true);
-      const fetchedFiles = await apiService.getFiles();
-      setFiles(fetchedFiles);
+      const response = await makeRequest({
+        method: 'GET',
+        url: '/file/',
+      });
+      setFiles(response.data);
     } catch (error) {
       console.error('Failed to load files:', error);
       toast({
@@ -42,7 +47,10 @@ export const FileManagement = () => {
     setDeletingFiles(prev => new Set(prev).add(fileId));
     
     try {
-      await apiService.deleteFile(fileId);
+      await makeRequest({
+        method: 'DELETE',
+        url: `/ingest/delete-file/${fileId}`,
+      });
       setFiles(prev => prev.filter(file => file.id !== fileId));
       toast({
         title: "File deleted",
@@ -231,7 +239,7 @@ export const FileManagement = () => {
                       size="sm"
                       onClick={() => handleDeleteFile(file.id, file.name)}
                       disabled={deletingFiles.has(file.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 dark:text-red-400"
                     >
                       {deletingFiles.has(file.id) ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
