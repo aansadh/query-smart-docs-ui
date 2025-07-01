@@ -12,6 +12,7 @@ import { apiService } from '@/services/api';
 export const Settings = () => {
   const [apiUrl, setApiUrl] = useState('http://localhost:8000');
   const [sessionId, setSessionId] = useState('');
+  const [sessionName, setSessionName] = useState('');
   const [generatedToken, setGeneratedToken] = useState('');
   const [showToken, setShowToken] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -87,9 +88,18 @@ export const Settings = () => {
   };
 
   const handleCreateSession = async () => {
+    if (!sessionName.trim()) {
+      toast({
+        title: "Session name required",
+        description: "Please enter a session name before creating a session.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreatingSession(true);
     try {
-      const response = await apiService.createSession();
+      const response = await apiService.createSession(sessionName.trim());
       console.log('Session creation response:', response);
       
       if (response.session_id) {
@@ -97,8 +107,9 @@ export const Settings = () => {
         apiService.setSessionId(response.session_id);
         toast({
           title: "Session created",
-          description: `New session created: ${response.session_id}`,
+          description: `New session created: ${sessionName}`,
         });
+        setSessionName(''); // Clear the input after successful creation
       } else {
         // Generate a temporary session ID if not provided
         const tempSessionId = `session_${Date.now()}`;
@@ -248,10 +259,23 @@ export const Settings = () => {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="sessionName">Session Name</Label>
+                <Input
+                  id="sessionName"
+                  value={sessionName}
+                  onChange={(e) => setSessionName(e.target.value)}
+                  placeholder="Enter session name"
+                />
+                <p className="text-sm text-gray-500">
+                  Give your session a descriptive name
+                </p>
+              </div>
+
               <div className="flex space-x-3">
                 <Button
                   onClick={handleCreateSession}
-                  disabled={isCreatingSession}
+                  disabled={isCreatingSession || !sessionName.trim()}
                   className="flex-1"
                 >
                   {isCreatingSession ? (
