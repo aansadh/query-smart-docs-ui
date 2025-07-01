@@ -64,7 +64,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
 
     try {
       setIsLoading(true);
-      const response = await apiService.createSession();
+      const response = await apiService.createSession({ session_name: newSessionName.trim() });
       console.log('New session created:', response);
       
       // Reload sessions to get the updated list
@@ -75,7 +75,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       
       toast({
         title: "Session Created",
-        description: `New session has been created successfully.`,
+        description: `Session "${newSessionName}" has been created successfully.`,
       });
     } catch (error) {
       console.error('Failed to create session:', error);
@@ -134,20 +134,26 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
     apiService.setSessionId(session._id);
     setIsViewDialogOpen(false);
     
+    const displayName = session.session_name || session._id.substring(0, 12) + '...';
     toast({
       title: "Session Switched",
-      description: `Switched to session: ${session._id.substring(0, 12)}...`,
+      description: `Switched to session: ${displayName}`,
     });
   };
 
   const currentSession = sessions.find(s => s._id === currentSessionId);
   const filteredSessions = sessions.filter(session => 
     session._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.user_id.toLowerCase().includes(searchQuery.toLowerCase())
+    session.user_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (session.session_name && session.session_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const getSessionDisplayName = (session: Session) => {
+    return session.session_name || `Session ${session._id.substring(0, 12)}...`;
   };
 
   if (isLoading && sessions.length === 0) {
@@ -167,7 +173,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg text-foreground">Current Session</CardTitle>
+                <CardTitle className="text-lg text-foreground">{getSessionDisplayName(currentSession)}</CardTitle>
                 <CardDescription className="text-muted-foreground">
                   ID: {currentSession._id.substring(0, 12)}... • Created: {formatDate(currentSession.created_at)}
                 </CardDescription>
@@ -198,13 +204,14 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="sessionName" className="text-foreground">Session Name (Optional)</Label>
+                <Label htmlFor="sessionName" className="text-foreground">Session Name</Label>
                 <Input
                   id="sessionName"
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
                   placeholder="Enter session name..."
                   className="mt-1 bg-background border-border text-foreground"
+                  required
                 />
               </div>
             </div>
@@ -251,9 +258,9 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-foreground">Session {session._id.substring(0, 12)}...</h4>
+                        <h4 className="font-medium text-foreground">{getSessionDisplayName(session)}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Created: {formatDate(session.created_at)}
+                          ID: {session._id.substring(0, 12)}... • Created: {formatDate(session.created_at)}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -281,7 +288,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                                 Delete Session
                               </DialogTitle>
                               <DialogDescription className="text-muted-foreground">
-                                Are you sure you want to delete this session? This action cannot be undone and all documents and data in this session will be permanently lost.
+                                Are you sure you want to delete "{getSessionDisplayName(session)}"? This action cannot be undone and all documents and data in this session will be permanently lost.
                               </DialogDescription>
                             </DialogHeader>
                             <DialogFooter>

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@clerk/clerk-react';
 import axios, { AxiosRequestConfig } from 'axios';
 
@@ -7,6 +6,7 @@ const API_BASE_URL = 'http://localhost:8000';
 export interface Session {
   _id: string;
   user_id: string;
+  session_name?: string;
   created_at: string;
 }
 
@@ -30,6 +30,10 @@ export interface FileInfo {
   type: string;
   created_at: string;
   size?: string;
+}
+
+export interface CreateSessionRequest {
+  session_name?: string;
 }
 
 export class ApiService {
@@ -96,9 +100,9 @@ export class ApiService {
     return response.data;
   }
 
-  async createSession(): Promise<any> {
+  async createSession(sessionData?: CreateSessionRequest): Promise<any> {
     const headers = await this.getHeaders();
-    const response = await axios.post(`${API_BASE_URL}/session/new-session`, {}, { headers });
+    const response = await axios.post(`${API_BASE_URL}/session/new-session`, sessionData || {}, { headers });
     return response.data;
   }
 
