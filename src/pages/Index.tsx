@@ -8,7 +8,7 @@ import { QueryInterface } from '@/components/QueryInterface';
 import { WebScraping } from '@/components/WebScraping';
 import { FileManagement } from '@/components/FileManagement';
 import { TokenGeneration } from '@/components/TokenGeneration';
-import { ApiDocs } from '@/pages/ApiDocs';
+import ApiDocs from '@/pages/ApiDocs';
 
 export default function Index() {
   const [currentView, setCurrentView] = useState('dashboard');
