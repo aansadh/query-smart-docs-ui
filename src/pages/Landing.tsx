@@ -93,7 +93,7 @@ const Landing = () => {
             <span className="bg-gradient-to-r from-foreground via-foreground/80 to-foreground/60 bg-clip-text text-transparent">
               Transform Your Documents with
             </span>
-            <span className="block pb-2 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/40 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/40 bg-clip-text text-transparent">
               Intelligent AI
             </span>
           </h1>
