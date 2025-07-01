@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +18,7 @@ interface SessionManagerProps {
 export const SessionManager = ({ currentSessionId, onSessionChange }: SessionManagerProps) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [currentSessionDetails, setCurrentSessionDetails] = useState<Session | null>(null);
   const [newSessionName, setNewSessionName] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -28,6 +28,23 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
   useEffect(() => {
     loadSessions();
   }, []);
+
+  useEffect(() => {
+    if (currentSessionId) {
+      loadCurrentSessionDetails();
+    }
+  }, [currentSessionId]);
+
+  const loadCurrentSessionDetails = async () => {
+    if (!currentSessionId) return;
+    
+    try {
+      const sessionDetails = await apiService.getSession();
+      setCurrentSessionDetails(sessionDetails);
+    } catch (error) {
+      console.error('Failed to load current session details:', error);
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -70,6 +87,9 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       
       // Reload sessions to get the updated list
       await loadSessions();
+      
+      // Dispatch event to notify dashboard
+      window.dispatchEvent(new CustomEvent('sessionChanged'));
       
       setNewSessionName('');
       setIsCreateDialogOpen(false);
@@ -135,14 +155,14 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
     apiService.setSessionId(session._id);
     setIsViewDialogOpen(false);
     
-    const displayName = session.session_name || session._id.substring(0, 12) + '...';
+    const displayName = session.session_name || `Session ${session._id.substring(0, 12)}...`;
     toast({
       title: "Session Switched",
       description: `Switched to session: ${displayName}`,
     });
   };
 
-  const currentSession = sessions.find(s => s._id === currentSessionId);
+  const currentSession = currentSessionDetails || sessions.find(s => s._id === currentSessionId);
   const filteredSessions = sessions.filter(session => 
     session._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     session.user_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -159,10 +179,10 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
 
   const getSessionTooltipContent = (session: Session) => {
     return (
-      <div className="space-y-1">
+      <div className="space-y-2 max-w-sm">
         <div><strong>Name:</strong> {session.session_name || 'Unnamed'}</div>
-        <div><strong>ID:</strong> {session._id}</div>
-        <div><strong>User ID:</strong> {session.user_id}</div>
+        <div><strong>Full ID:</strong> <span className="font-mono text-xs break-all">{session._id}</span></div>
+        <div><strong>User ID:</strong> <span className="font-mono text-xs break-all">{session.user_id}</span></div>
         <div><strong>Created:</strong> {formatDate(session.created_at)}</div>
       </div>
     );

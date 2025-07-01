@@ -105,6 +105,10 @@ export const Settings = () => {
       if (response.session_id) {
         setSessionId(response.session_id);
         apiService.setSessionId(response.session_id);
+        
+        // Dispatch event to notify dashboard
+        window.dispatchEvent(new CustomEvent('sessionChanged'));
+        
         toast({
           title: "Session created",
           description: `New session created: ${sessionName}`,
@@ -115,6 +119,10 @@ export const Settings = () => {
         const tempSessionId = `session_${Date.now()}`;
         setSessionId(tempSessionId);
         apiService.setSessionId(tempSessionId);
+        
+        // Dispatch event to notify dashboard
+        window.dispatchEvent(new CustomEvent('sessionChanged'));
+        
         toast({
           title: "Session initialized",
           description: "Session has been set up for this browser",

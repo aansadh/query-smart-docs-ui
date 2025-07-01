@@ -109,6 +109,12 @@ export class ApiService {
     return response.data;
   }
 
+  async getSession(): Promise<Session> {
+    const headers = await this.getHeaders();
+    const response = await axios.get(`${API_BASE_URL}/session/get-session`, { headers });
+    return response.data;
+  }
+
   async getSessions(): Promise<Session[]> {
     const headers = await this.getHeaders();
     const response = await axios.get(`${API_BASE_URL}/session/get-sessions`, { headers });

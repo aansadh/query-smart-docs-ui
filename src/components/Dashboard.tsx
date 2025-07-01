@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +24,18 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
   useEffect(() => {
     loadStats();
   }, [currentSession]);
+
+  // Add event listener for session changes
+  useEffect(() => {
+    const handleSessionChange = () => {
+      loadStats();
+    };
+
+    window.addEventListener('sessionChanged', handleSessionChange);
+    return () => {
+      window.removeEventListener('sessionChanged', handleSessionChange);
+    };
+  }, []);
 
   const loadStats = async () => {
     try {
@@ -91,6 +102,8 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
 
   const handleSessionChange = (sessionId: string) => {
     localStorage.setItem('current_session_id', sessionId);
+    // Dispatch custom event to notify dashboard of session change
+    window.dispatchEvent(new CustomEvent('sessionChanged'));
     loadStats();
   };
 
