@@ -7,7 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Trash2, Search, Calendar, Loader2, AlertCircle, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApi } from '@/hooks/useApi';
-import { FileInfo } from '@/services/api';
+
+interface FileInfo {
+  file_id: string;
+  file_name: string;
+  session_id: string;
+  created_at?: string;
+  size?: string;
+  type?: string;
+}
 
 interface FileManagementProps {
   onViewChange?: (view: string) => void;
@@ -20,8 +28,6 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { makeRequest } = useApi();
-
-  const currentSessionId = localStorage.getItem('current_session_id');
 
   useEffect(() => {
     loadFiles();
@@ -55,9 +61,9 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
     try {
       await makeRequest({
         method: 'DELETE',
-        url: `/ingest/delete-file/${fileId}`,
+        url: `/file/delete-file/${fileId}`,
       });
-      setFiles(prev => prev.filter(file => file.id !== fileId));
+      setFiles(prev => prev.filter(file => file.file_id !== fileId));
       toast({
         title: "File deleted",
         description: `"${fileName}" has been removed from your knowledge base`,
@@ -85,12 +91,11 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
   };
 
   const filteredFiles = files.filter(file => {
-    // Handle cases where file.name might be undefined or null
-    const fileName = file.name || '';
+    const fileName = file.file_name || '';
     return fileName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return 'Unknown date';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -101,7 +106,7 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
     });
   };
 
-  const getFileIcon = (type: string) => {
+  const getFileIcon = (type?: string) => {
     switch (type) {
       case 'pdf':
         return <FileText className="w-5 h-5 text-red-600" />;
@@ -114,7 +119,7 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
     }
   };
 
-  const getTypeLabel = (type: string) => {
+  const getTypeLabel = (type?: string) => {
     switch (type) {
       case 'pdf':
         return 'PDF Document';
@@ -123,7 +128,7 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
       case 'web':
         return 'Web Content';
       default:
-        return 'Unknown';
+        return 'Document';
     }
   };
 
@@ -141,18 +146,6 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
             </CardDescription>
           </CardHeader>
         </Card>
-        
-        {currentSessionId && (
-          <Card className="bg-accent/20 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="px-3 py-1">
-                  Current Session: {currentSessionId.substring(0, 12)}...
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin" />
@@ -175,18 +168,6 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
           </CardDescription>
         </CardHeader>
       </Card>
-
-      {currentSessionId && (
-        <Card className="bg-accent/20 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="px-3 py-1">
-                Current Session: {currentSessionId.substring(0, 12)}...
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <div className="flex items-center space-x-4">
         <div className="flex-1 relative">
@@ -231,18 +212,17 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
       ) : (
         <div className="space-y-3">
           {filteredFiles.map((file) => (
-            <Card key={file.id} className="hover:shadow-md transition-shadow">
+            <Card key={file.file_id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4 flex-1">
                     {getFileIcon(file.type)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <h4 className="font-medium text-foreground truncate">{file.name || 'Unnamed file'}</h4>
+                        <h4 className="font-medium text-foreground truncate">{file.file_name || 'Unnamed file'}</h4>
                       </div>
                       <div className="flex items-center space-x-4 mt-1 text-sm text-muted-foreground">
                         <span>{getTypeLabel(file.type)}</span>
-                        {file.size && <span>{file.size}</span>}
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-3 h-3" />
                           <span>{formatDate(file.created_at)}</span>
@@ -255,11 +235,11 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteFile(file.id, file.name || 'Unnamed file')}
-                      disabled={deletingFiles.has(file.id)}
+                      onClick={() => handleDeleteFile(file.file_id, file.file_name || 'Unnamed file')}
+                      disabled={deletingFiles.has(file.file_id)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 dark:text-red-400"
                     >
-                      {deletingFiles.has(file.id) ? (
+                      {deletingFiles.has(file.file_id) ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Trash2 className="w-4 h-4" />
@@ -283,7 +263,6 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
                 <li>• Deleting files will remove them from your knowledge base permanently</li>
                 <li>• File search looks through file names and types</li>
                 <li>• All files are associated with your current session</li>
-                <li>• Switch sessions to view files from other sessions</li>
               </ul>
             </div>
           </div>

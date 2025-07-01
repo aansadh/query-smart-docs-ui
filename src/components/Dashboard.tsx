@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,15 +26,22 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
     loadStats();
   }, [currentSession]);
 
-  // Add event listener for session changes
+  // Add event listeners for session changes and deletions
   useEffect(() => {
     const handleSessionChange = () => {
       loadStats();
     };
 
+    const handleSessionDeleted = () => {
+      loadStats();
+    };
+
     window.addEventListener('sessionChanged', handleSessionChange);
+    window.addEventListener('sessionDeleted', handleSessionDeleted);
+    
     return () => {
       window.removeEventListener('sessionChanged', handleSessionChange);
+      window.removeEventListener('sessionDeleted', handleSessionDeleted);
     };
   }, []);
 
@@ -119,7 +127,7 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
         </p>
       </div>
 
-      {/* Current Session Display */}
+      {/* Current Session Display - Removed session ID display */}
       {currentSession && (
         <Card className="bg-accent/20 border-primary/20">
           <CardContent className="p-6">
@@ -129,7 +137,7 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
                 <div>
                   <h3 className="font-semibold text-foreground">Active Session</h3>
                   <p className="text-sm text-muted-foreground">
-                    Session ID: {currentSession.substring(0, 12)}...
+                    Ready to process your documents
                   </p>
                 </div>
               </div>

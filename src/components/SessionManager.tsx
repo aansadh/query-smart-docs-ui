@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,6 +81,20 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       return;
     }
 
+    // Check for duplicate session names
+    const existingSession = sessions.find(
+      session => session.session_name?.toLowerCase() === newSessionName.trim().toLowerCase()
+    );
+
+    if (existingSession) {
+      toast({
+        title: "Error",
+        description: "A session with this name already exists. Please choose a different name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await apiService.createSession(newSessionName.trim());
@@ -132,6 +147,9 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
           apiService.clearSession();
         }
       }
+      
+      // Dispatch event to notify dashboard of session deletion
+      window.dispatchEvent(new CustomEvent('sessionDeleted'));
       
       toast({
         title: "Session Deleted",
@@ -200,7 +218,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        {/* Current Session Info */}
+        {/* Current Session Info - Removed session ID display */}
         {currentSession && (
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardHeader className="pb-4">
@@ -216,16 +234,9 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                       {getSessionTooltipContent(currentSession)}
                     </TooltipContent>
                   </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <CardDescription className="text-muted-foreground cursor-help">
-                        ID: {currentSession._id.substring(0, 12)}... • Created: {formatDate(currentSession.created_at)}
-                      </CardDescription>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {getSessionTooltipContent(currentSession)}
-                    </TooltipContent>
-                  </Tooltip>
+                  <CardDescription className="text-muted-foreground">
+                    Created: {formatDate(currentSession.created_at)}
+                  </CardDescription>
                 </div>
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                   Active
@@ -258,7 +269,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                     id="sessionName"
                     value={newSessionName}
                     onChange={(e) => setNewSessionName(e.target.value)}
-                    placeholder="Enter session name..."
+                    placeholder="Enter unique session name..."
                     className="mt-1 bg-background border-border text-foreground"
                     required
                   />
