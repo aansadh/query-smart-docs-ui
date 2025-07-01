@@ -54,7 +54,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
   const currentSessionId = localStorage.getItem('current_session_id') || 'No active session';
 
   return (
-    <Sidebar className="border-r border-border w-80">
+    <Sidebar className="border-r border-border">
       <SidebarHeader className="p-6 border-b border-border">
         <Link to="/" className="flex items-center space-x-3 group">
           <div className="w-10 h-10 bg-foreground rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -160,7 +160,7 @@ export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => 
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar currentView={currentView} onViewChange={onViewChange} />
-        <main className="flex-1 flex flex-col ml-80">
+        <main className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
