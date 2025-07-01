@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,8 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
         method: 'GET',
         url: '/file/',
       });
-      setFiles(response.data);
+      console.log('Files response:', response.data);
+      setFiles(response.data || []);
     } catch (error) {
       console.error('Failed to load files:', error);
       toast({
@@ -41,6 +43,7 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
         description: "Failed to load files. Please try again.",
         variant: "destructive",
       });
+      setFiles([]);
     } finally {
       setIsLoading(false);
     }
@@ -81,11 +84,14 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
     }
   };
 
-  const filteredFiles = files.filter(file =>
-    file.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredFiles = files.filter(file => {
+    // Handle cases where file.name might be undefined or null
+    const fileName = file.name || '';
+    return fileName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Unknown date';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -232,7 +238,7 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
                     {getFileIcon(file.type)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <h4 className="font-medium text-foreground truncate">{file.name}</h4>
+                        <h4 className="font-medium text-foreground truncate">{file.name || 'Unnamed file'}</h4>
                       </div>
                       <div className="flex items-center space-x-4 mt-1 text-sm text-muted-foreground">
                         <span>{getTypeLabel(file.type)}</span>
@@ -249,7 +255,7 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteFile(file.id, file.name)}
+                      onClick={() => handleDeleteFile(file.id, file.name || 'Unnamed file')}
                       disabled={deletingFiles.has(file.id)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 dark:text-red-400"
                     >

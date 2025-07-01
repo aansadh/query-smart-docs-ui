@@ -8,6 +8,8 @@ import { useTheme } from '@/components/ThemeProvider';
 import { useApi } from '@/hooks/useApi';
 import { Link } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useEffect } from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -155,44 +157,95 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
 
 export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => {
   const currentSessionId = localStorage.getItem('current_session_id');
+  const [sessionDetails, setSessionDetails] = useState<{id: string, name: string} | null>(null);
+  const { makeRequest } = useApi();
+
+  useEffect(() => {
+    const loadSessionDetails = async () => {
+      if (currentSessionId) {
+        try {
+          const response = await makeRequest({
+            method: 'GET',
+            url: '/session/get-session',
+          });
+          setSessionDetails({
+            id: response.data._id || currentSessionId,
+            name: response.data.session_name || 'Unnamed Session'
+          });
+        } catch (error) {
+          console.error('Failed to load session details:', error);
+          setSessionDetails({
+            id: currentSessionId,
+            name: 'Unnamed Session'
+          });
+        }
+      }
+    };
+
+    loadSessionDetails();
+  }, [currentSessionId, makeRequest]);
   
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar currentView={currentView} onViewChange={onViewChange} />
-        <main className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-10 px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors focus-ring" />
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground capitalize">
-                    {currentView.replace(/([A-Z])/g, ' $1').trim().replace('Api', 'API')}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {currentView === 'dashboard' && 'Manage your document sessions'}
-                    {currentView === 'upload' && 'Upload PDFs and text documents'}
-                    {currentView === 'query' && 'Ask questions about your documents'}
-                    {currentView === 'scrape' && 'Import content from web URLs'}
-                    {currentView === 'files' && 'Manage your uploaded documents'}
-                    {currentView === 'token' && 'Generate API access tokens'}
-                    {currentView === 'api-docs' && 'API integration documentation'}
-                  </p>
+    <TooltipProvider>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar currentView={currentView} onViewChange={onViewChange} />
+          <main className="flex-1 flex flex-col">
+            <header className="sticky top-0 z-10 px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors focus-ring" />
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground capitalize">
+                      {currentView.replace(/([A-Z])/g, ' $1').trim().replace('Api', 'API')}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {currentView === 'dashboard' && 'Manage your document sessions'}
+                      {currentView === 'upload' && 'Upload PDFs and text documents'}
+                      {currentView === 'query' && 'Ask questions about your documents'}
+                      {currentView === 'scrape' && 'Import content from web URLs'}
+                      {currentView === 'files' && 'Manage your uploaded documents'}
+                      {currentView === 'token' && 'Generate API access tokens'}
+                      {currentView === 'api-docs' && 'API integration documentation'}
+                    </p>
+                  </div>
                 </div>
+                {sessionDetails && (
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-foreground">Current Session</p>
+                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help hover:text-foreground transition-colors">
+                            ID: {sessionDetails.id.substring(0, 12)}...
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-mono text-xs">Full ID: {sessionDetails.id}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <span>•</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help hover:text-foreground transition-colors max-w-24 truncate">
+                            {sessionDetails.name}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Session Name: {sessionDetails.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                )}
               </div>
-              {currentSessionId && (
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">Current Session</p>
-                  <p className="text-xs text-muted-foreground">{currentSessionId.substring(0, 12)}...</p>
-                </div>
-              )}
+            </header>
+            <div className="flex-1 p-6 overflow-auto">
+              {children}
             </div>
-          </header>
-          <div className="flex-1 p-6 overflow-auto">
-            {children}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+          </main>
+        </div>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 };
