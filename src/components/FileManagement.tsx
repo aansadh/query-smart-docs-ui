@@ -1,15 +1,18 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Trash2, Search, Calendar, Loader2, AlertCircle } from 'lucide-react';
+import { FileText, Trash2, Search, Calendar, Loader2, AlertCircle, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApi } from '@/hooks/useApi';
 import { FileInfo } from '@/services/api';
 
-export const FileManagement = () => {
+interface FileManagementProps {
+  onViewChange?: (view: string) => void;
+}
+
+export const FileManagement = ({ onViewChange }: FileManagementProps) => {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
@@ -69,6 +72,12 @@ export const FileManagement = () => {
         newSet.delete(fileId);
         return newSet;
       });
+    }
+  };
+
+  const handleUploadRedirect = () => {
+    if (onViewChange) {
+      onViewChange('upload');
     }
   };
 
@@ -203,8 +212,9 @@ export const FileManagement = () => {
                 }
               </p>
               {!searchTerm && (
-                <Button onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-upload'))}>
-                  Upload Documents
+                <Button onClick={handleUploadRedirect} className="flex items-center space-x-2">
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Documents</span>
                 </Button>
               )}
             </div>

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,7 +14,11 @@ interface Message {
   timestamp: Date;
 }
 
-export const QueryInterface = () => {
+interface QueryInterfaceProps {
+  onViewChange?: (view: string) => void;
+}
+
+export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -108,6 +111,18 @@ export const QueryInterface = () => {
       title: "Chat cleared",
       description: "All messages have been removed",
     });
+  };
+
+  const handleUploadRedirect = () => {
+    if (onViewChange) {
+      onViewChange('upload');
+    }
+  };
+
+  const handleScrapeRedirect = () => {
+    if (onViewChange) {
+      onViewChange('scrape');
+    }
   };
 
   const formatTime = (timestamp: Date) => {
@@ -253,7 +268,8 @@ export const QueryInterface = () => {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground"
+                    onClick={handleUploadRedirect}
+                    className="text-muted-foreground hover:text-foreground focus-ring"
                     title="Upload files"
                   >
                     <Upload className="w-4 h-4" />
@@ -262,7 +278,8 @@ export const QueryInterface = () => {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground"
+                    onClick={handleScrapeRedirect}
+                    className="text-muted-foreground hover:text-foreground focus-ring"
                     title="Add URL"
                   >
                     <Globe className="w-4 h-4" />
