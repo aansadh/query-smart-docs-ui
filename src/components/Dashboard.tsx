@@ -5,14 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SessionManager } from './SessionManager';
 import { Bot, FileText, MessageSquare, Globe, TrendingUp, Clock, Users, Activity } from 'lucide-react';
-import { apiService } from '@/services/api';
+import { useApi } from '@/hooks/useApi';
 
 interface DashboardProps {
-  currentSessionId: string | null;
-  onSessionChange: (sessionId: string) => void;
+  onViewChange: (view: string) => void;
 }
 
-export const Dashboard = ({ currentSessionId, onSessionChange }: DashboardProps) => {
+export const Dashboard = ({ onViewChange }: DashboardProps) => {
+  const { makeRequest } = useApi();
   const [stats, setStats] = useState({
     totalSessions: 0,
     totalFiles: 0,
@@ -24,23 +24,30 @@ export const Dashboard = ({ currentSessionId, onSessionChange }: DashboardProps)
 
   useEffect(() => {
     loadStats();
-  }, [currentSessionId]);
+  }, [currentSession]);
 
   const loadStats = async () => {
     try {
       setStats(prev => ({ ...prev, isLoading: true }));
       
       // Load sessions
-      const sessions = await apiService.getSessions();
+      const sessionsResponse = await makeRequest({
+        method: 'GET',
+        url: '/session/get-sessions',
+      });
       
       // Load files for current session
       let files = [];
-      if (currentSessionId) {
-        files = await apiService.getFiles();
+      if (currentSession) {
+        const filesResponse = await makeRequest({
+          method: 'GET',
+          url: '/file/',
+        });
+        files = filesResponse.data;
       }
       
       setStats({
-        totalSessions: sessions.length,
+        totalSessions: sessionsResponse.data.length,
         totalFiles: files.length,
         totalQueries: 0, // This would need to be tracked in the backend
         isLoading: false,
@@ -81,6 +88,11 @@ export const Dashboard = ({ currentSessionId, onSessionChange }: DashboardProps)
       color: 'text-orange-600',
     },
   ];
+
+  const handleSessionChange = (sessionId: string) => {
+    localStorage.setItem('current_session_id', sessionId);
+    loadStats();
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -177,8 +189,8 @@ export const Dashboard = ({ currentSessionId, onSessionChange }: DashboardProps)
         </CardHeader>
         <CardContent>
           <SessionManager 
-            currentSessionId={currentSessionId} 
-            onSessionChange={onSessionChange}
+            currentSessionId={currentSession} 
+            onSessionChange={handleSessionChange}
           />
         </CardContent>
       </Card>
@@ -207,7 +219,7 @@ export const Dashboard = ({ currentSessionId, onSessionChange }: DashboardProps)
                         variant="outline"
                         size="sm"
                         className="mt-3 w-full"
-                        onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-' + feature.action))}
+                        onClick={() => onViewChange(feature.action)}
                       >
                         Get Started
                       </Button>

@@ -5,7 +5,7 @@ import { useCallback } from 'react';
 
 const API_BASE_URL = 'http://localhost:8000';
 
-export interface ApiRequestConfig extends Omit<AxiosRequestConfig, 'headers'> {
+export interface ApiRequestConfig extends Omit<AxiosRequestConfig, 'baseURL'> {
   sessionId?: string;
 }
 
