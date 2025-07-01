@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,8 +52,11 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       const fetchedSessions = await apiService.getSessions();
       setSessions(fetchedSessions);
       
-      // If no current session, set the first one as current
-      if (!currentSessionId && fetchedSessions.length > 0) {
+      // If no sessions exist, create a default one
+      if (fetchedSessions.length === 0) {
+        await createDefaultSession();
+      } else if (!currentSessionId) {
+        // If no current session, set the first one as current
         const firstSession = fetchedSessions[0];
         onSessionChange(firstSession._id);
         apiService.setSessionId(firstSession._id);
@@ -68,6 +70,40 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const createDefaultSession = async () => {
+    try {
+      const defaultSessionName = "My First Workspace";
+      const response = await apiService.createSession(defaultSessionName);
+      console.log('Default session created:', response);
+      
+      // Reload sessions to get the updated list
+      const fetchedSessions = await apiService.getSessions();
+      setSessions(fetchedSessions);
+      
+      // Set the default session as current
+      if (fetchedSessions.length > 0) {
+        const defaultSession = fetchedSessions[0];
+        onSessionChange(defaultSession._id);
+        apiService.setSessionId(defaultSession._id);
+      }
+      
+      // Dispatch event to notify dashboard
+      window.dispatchEvent(new CustomEvent('sessionChanged'));
+      
+      toast({
+        title: "Welcome!",
+        description: `Your first workspace "${defaultSessionName}" has been created.`,
+      });
+    } catch (error) {
+      console.error('Failed to create default session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create default session",
+        variant: "destructive",
+      });
     }
   };
 
@@ -126,6 +162,20 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
   };
 
   const handleDeleteSession = async (sessionId: string) => {
+    // Check if this is the default session (first session or named "My First Workspace")
+    const sessionToDelete = sessions.find(s => s._id === sessionId);
+    const isDefaultSession = sessionToDelete?.session_name === "My First Workspace" || 
+                            (sessions.length === 1 && sessions[0]._id === sessionId);
+
+    if (isDefaultSession) {
+      toast({
+        title: "Cannot Delete",
+        description: "The default workspace cannot be deleted. Create another session first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       
@@ -206,6 +256,10 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
     );
   };
 
+  const canDeleteSession = (session: Session) => {
+    return session.session_name !== "My First Workspace" && sessions.length > 1;
+  };
+
   if (isLoading && sessions.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -218,7 +272,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        {/* Current Session Info - Removed session ID display */}
+        {/* Current Session Info */}
         {currentSession && (
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardHeader className="pb-4">
@@ -329,7 +383,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <p className="text-sm text-muted-foreground cursor-help">
-                                ID: {session._id.substring(0, 12)}... • Created: {formatDate(session.created_at)}
+                                Created: {formatDate(session.created_at)}
                               </p>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -349,30 +403,32 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
                               Switch
                             </Button>
                           )}
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" variant="destructive" disabled={isLoading}>
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-card border-border">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-foreground">
-                                  <AlertTriangle className="w-5 h-5 text-destructive" />
-                                  Delete Session
-                                </DialogTitle>
-                                <DialogDescription className="text-muted-foreground">
-                                  Are you sure you want to delete "{getSessionDisplayName(session)}"? This action cannot be undone and all documents and data in this session will be permanently lost.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <DialogFooter>
-                                <Button variant="outline" className="border-border text-foreground">Cancel</Button>
-                                <Button variant="destructive" onClick={() => handleDeleteSession(session._id)} disabled={isLoading}>
-                                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Session"}
+                          {canDeleteSession(session) && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="destructive" disabled={isLoading}>
+                                  <Trash2 className="w-3 h-3" />
                                 </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                              </DialogTrigger>
+                              <DialogContent className="bg-card border-border">
+                                <DialogHeader>
+                                  <DialogTitle className="flex items-center gap-2 text-foreground">
+                                    <AlertTriangle className="w-5 h-5 text-destructive" />
+                                    Delete Session
+                                  </DialogTitle>
+                                  <DialogDescription className="text-muted-foreground">
+                                    Are you sure you want to delete "{getSessionDisplayName(session)}"? This action cannot be undone and all documents and data in this session will be permanently lost.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button variant="outline" className="border-border text-foreground">Cancel</Button>
+                                  <Button variant="destructive" onClick={() => handleDeleteSession(session._id)} disabled={isLoading}>
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Session"}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          )}
                         </div>
                       </div>
                     </CardContent>
