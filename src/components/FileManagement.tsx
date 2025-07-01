@@ -212,10 +212,12 @@ export const FileManagement = ({ onViewChange }: FileManagementProps) => {
                 }
               </p>
               {!searchTerm && (
-                <Button onClick={handleUploadRedirect} className="flex items-center space-x-2">
-                  <Upload className="w-4 h-4" />
-                  <span>Upload Documents</span>
-                </Button>
+                <div className="flex justify-center">
+                  <Button onClick={handleUploadRedirect} className="flex items-center space-x-2">
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Documents</span>
+                  </Button>
+                </div>
               )}
             </div>
           </CardContent>

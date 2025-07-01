@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Trash2, Eye, AlertTriangle, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService, Session } from '@/services/api';
@@ -64,7 +65,7 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
 
     try {
       setIsLoading(true);
-      const response = await apiService.createSession({ session_name: newSessionName.trim() });
+      const response = await apiService.createSession(newSessionName.trim());
       console.log('New session created:', response);
       
       // Reload sessions to get the updated list
@@ -156,6 +157,17 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
     return session.session_name || `Session ${session._id.substring(0, 12)}...`;
   };
 
+  const getSessionTooltipContent = (session: Session) => {
+    return (
+      <div className="space-y-1">
+        <div><strong>Name:</strong> {session.session_name || 'Unnamed'}</div>
+        <div><strong>ID:</strong> {session._id}</div>
+        <div><strong>User ID:</strong> {session.user_id}</div>
+        <div><strong>Created:</strong> {formatDate(session.created_at)}</div>
+      </div>
+    );
+  };
+
   if (isLoading && sessions.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -166,153 +178,185 @@ export const SessionManager = ({ currentSessionId, onSessionChange }: SessionMan
   }
 
   return (
-    <div className="space-y-6">
-      {/* Current Session Info */}
-      {currentSession && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg text-foreground">{getSessionDisplayName(currentSession)}</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  ID: {currentSession._id.substring(0, 12)}... • Created: {formatDate(currentSession.created_at)}
-                </CardDescription>
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Current Session Info */}
+        {currentSession && (
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CardTitle className="text-lg text-foreground cursor-help">
+                        {getSessionDisplayName(currentSession)}
+                      </CardTitle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {getSessionTooltipContent(currentSession)}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CardDescription className="text-muted-foreground cursor-help">
+                        ID: {currentSession._id.substring(0, 12)}... • Created: {formatDate(currentSession.created_at)}
+                      </CardDescription>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {getSessionTooltipContent(currentSession)}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                  Active
+                </Badge>
               </div>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                Active
-              </Badge>
-            </div>
-          </CardHeader>
-        </Card>
-      )}
+            </CardHeader>
+          </Card>
+        )}
 
-      {/* Session Actions */}
-      <div className="flex flex-wrap gap-3">
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button disabled={isLoading} className="bg-foreground text-background hover:bg-foreground/90">
-              <Plus className="w-4 h-4 mr-2" />
-              New Session
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">Create New Session</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Create a new isolated session for your documents and queries.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="sessionName" className="text-foreground">Session Name</Label>
+        {/* Session Actions */}
+        <div className="flex flex-wrap gap-3">
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button disabled={isLoading} className="bg-foreground text-background hover:bg-foreground/90">
+                <Plus className="w-4 h-4 mr-2" />
+                New Session
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle className="text-foreground">Create New Session</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Create a new isolated session for your documents and queries.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="sessionName" className="text-foreground">Session Name</Label>
+                  <Input
+                    id="sessionName"
+                    value={newSessionName}
+                    onChange={(e) => setNewSessionName(e.target.value)}
+                    placeholder="Enter session name..."
+                    className="mt-1 bg-background border-border text-foreground"
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="border-border text-foreground">
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateSession} disabled={isLoading} className="bg-foreground text-background">
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Session"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-border text-foreground hover:bg-accent">
+                <Eye className="w-4 h-4 mr-2" />
+                View All Sessions
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl bg-card border-border">
+              <DialogHeader>
+                <DialogTitle className="text-foreground">All Sessions</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Manage your document sessions
+                </DialogDescription>
+              </DialogHeader>
+              
+              {/* Search Bar */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  id="sessionName"
-                  value={newSessionName}
-                  onChange={(e) => setNewSessionName(e.target.value)}
-                  placeholder="Enter session name..."
-                  className="mt-1 bg-background border-border text-foreground"
-                  required
+                  placeholder="Search sessions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-background border-border text-foreground"
                 />
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="border-border text-foreground">
-                Cancel
-              </Button>
-              <Button onClick={handleCreateSession} disabled={isLoading} className="bg-foreground text-background">
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Session"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="border-border text-foreground hover:bg-accent">
-              <Eye className="w-4 h-4 mr-2" />
-              View All Sessions
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">All Sessions</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Manage your document sessions
-              </DialogDescription>
-            </DialogHeader>
-            
-            {/* Search Bar */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search sessions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-background border-border text-foreground"
-              />
-            </div>
-            
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {filteredSessions.map((session) => (
-                <Card key={session._id} className={`transition-all duration-200 border-border ${session._id === currentSessionId ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-accent'}`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-foreground">{getSessionDisplayName(session)}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          ID: {session._id.substring(0, 12)}... • Created: {formatDate(session.created_at)}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        {session._id !== currentSessionId && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleSessionSwitch(session)}
-                            className="border-border text-foreground hover:bg-accent"
-                            disabled={isLoading}
-                          >
-                            Switch
-                          </Button>
-                        )}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="destructive" disabled={isLoading}>
-                              <Trash2 className="w-3 h-3" />
+              
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {filteredSessions.map((session) => (
+                  <Card key={session._id} className={`transition-all duration-200 border-border ${session._id === currentSessionId ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-accent'}`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <h4 className="font-medium text-foreground cursor-help">{getSessionDisplayName(session)}</h4>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {getSessionTooltipContent(session)}
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-sm text-muted-foreground cursor-help">
+                                ID: {session._id.substring(0, 12)}... • Created: {formatDate(session.created_at)}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {getSessionTooltipContent(session)}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <div className="flex gap-2">
+                          {session._id !== currentSessionId && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleSessionSwitch(session)}
+                              className="border-border text-foreground hover:bg-accent"
+                              disabled={isLoading}
+                            >
+                              Switch
                             </Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-card border-border">
-                            <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2 text-foreground">
-                                <AlertTriangle className="w-5 h-5 text-destructive" />
-                                Delete Session
-                              </DialogTitle>
-                              <DialogDescription className="text-muted-foreground">
-                                Are you sure you want to delete "{getSessionDisplayName(session)}"? This action cannot be undone and all documents and data in this session will be permanently lost.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button variant="outline" className="border-border text-foreground">Cancel</Button>
-                              <Button variant="destructive" onClick={() => handleDeleteSession(session._id)} disabled={isLoading}>
-                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Session"}
+                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="destructive" disabled={isLoading}>
+                                <Trash2 className="w-3 h-3" />
                               </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogTrigger>
+                            <DialogContent className="bg-card border-border">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-foreground">
+                                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                                  Delete Session
+                                </DialogTitle>
+                                <DialogDescription className="text-muted-foreground">
+                                  Are you sure you want to delete "{getSessionDisplayName(session)}"? This action cannot be undone and all documents and data in this session will be permanently lost.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="outline" className="border-border text-foreground">Cancel</Button>
+                                <Button variant="destructive" onClick={() => handleDeleteSession(session._id)} disabled={isLoading}>
+                                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Session"}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {filteredSessions.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  {sessions.length === 0 ? "No sessions found. Create your first session to get started." : "No sessions found matching your search."}
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+                    </CardContent>
+                  </Card>
+                ))}
+                {filteredSessions.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {sessions.length === 0 ? "No sessions found. Create your first session to get started." : "No sessions found matching your search."}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

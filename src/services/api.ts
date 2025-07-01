@@ -100,9 +100,12 @@ export class ApiService {
     return response.data;
   }
 
-  async createSession(sessionData?: CreateSessionRequest): Promise<any> {
+  async createSession(sessionName: string): Promise<any> {
     const headers = await this.getHeaders();
-    const response = await axios.post(`${API_BASE_URL}/session/new-session`, sessionData || {}, { headers });
+    const response = await axios.post(`${API_BASE_URL}/session/new-session`, null, { 
+      headers,
+      params: { session_name: sessionName }
+    });
     return response.data;
   }
 
