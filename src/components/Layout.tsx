@@ -77,12 +77,12 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
             Session Features
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
                     asChild
-                    className={`w-full justify-start py-5 px-3 rounded-lg transition-colors ${
+                    className={`w-full justify-start py-3 px-3 rounded-lg transition-colors ${
                       currentView === item.id 
                         ? 'bg-foreground text-background' 
                         : 'text-foreground/70 hover:bg-accent hover:text-foreground'
@@ -113,7 +113,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild
-                  className="w-full justify-start py-5 px-3 rounded-lg transition-colors text-foreground/70 hover:bg-accent hover:text-foreground"
+                  className="w-full justify-start py-3 px-3 rounded-lg transition-colors text-foreground/70 hover:bg-accent hover:text-foreground"
                 >
                   <button onClick={() => onViewChange('api-docs')} className="flex items-center space-x-3 text-left">
                     <BookOpen className="w-5 h-5" />
