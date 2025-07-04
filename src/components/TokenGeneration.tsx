@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, Eye, EyeOff, Key, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApi } from '@/hooks/useApi';
+import { Link } from 'react-router-dom';
 
 export const TokenGeneration = () => {
   const { toast } = useToast();
@@ -196,13 +197,12 @@ export const TokenGeneration = () => {
             </div>
             <p className="text-muted-foreground">
               For complete API documentation and examples, visit the{' '}
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-primary"
-                onClick={() => window.open('/api-docs', '_blank')}
+              <Link 
+                to="/docs"
+                className="text-primary hover:underline"
               >
                 API Documentation
-              </Button>{' '}
+              </Link>{' '}
               section.
             </p>
           </div>

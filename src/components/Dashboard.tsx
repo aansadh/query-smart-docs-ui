@@ -119,15 +119,26 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-foreground">
+        <div className="flex items-center justify-center space-x-4 mb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-foreground via-foreground/80 to-foreground/60 rounded-2xl flex items-center justify-center shadow-lg">
+            <Bot className="w-9 h-9 text-background" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+              CogniDoc
+            </h1>
+            <p className="text-lg text-muted-foreground">AI Document Assistant</p>
+          </div>
+        </div>
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
           Welcome to CogniDoc
-        </h1>
+        </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Your AI-powered document assistant. Upload documents, ask questions, and get intelligent insights.
         </p>
       </div>
 
-      {/* Current Session Display - Removed session ID display */}
+      {/* Current Session Display */}
       {currentSession && (
         <Card className="bg-accent/20 border-primary/20">
           <CardContent className="p-6">
@@ -228,24 +239,24 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {features.map((feature, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className={`${feature.color}`}>
+                <CardContent className="p-4 flex flex-col h-full">
+                  <div className="flex items-start space-x-3 flex-1">
+                    <div className={`${feature.color} flex-shrink-0`}>
                       {feature.icon}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground text-sm">{feature.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-3 w-full"
-                        onClick={() => onViewChange(feature.action)}
-                      >
-                        Get Started
-                      </Button>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-foreground text-sm mb-1">{feature.title}</h4>
+                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{feature.description}</p>
                     </div>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-auto"
+                    onClick={() => onViewChange(feature.action)}
+                  >
+                    Get Started
+                  </Button>
                 </CardContent>
               </Card>
             ))}

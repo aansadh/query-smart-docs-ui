@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,11 +56,13 @@ const Landing = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-foreground rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-foreground via-foreground/80 to-foreground/60 rounded-lg flex items-center justify-center">
                 <Bot className="w-6 h-6 text-background" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">CogniDoc</h1>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                  CogniDoc
+                </h1>
                 <p className="text-xs text-muted-foreground">AI Document Assistant</p>
               </div>
             </div>
@@ -76,6 +79,9 @@ const Landing = () => {
                 <Link to="/app">
                   <Button variant="ghost">Dashboard</Button>
                 </Link>
+                <Link to="/docs">
+                  <Button variant="outline">API Docs</Button>
+                </Link>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
             </div>
@@ -84,7 +90,7 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
+      <section className="h-screen flex items-center justify-center px-4">
         <div className="container mx-auto text-center max-w-4xl">
           <Badge variant="secondary" className="mb-6">
             AI-Powered Document Intelligence
@@ -120,6 +126,11 @@ const Landing = () => {
                 <Button size="lg" className="text-lg px-8 py-6">
                   Go to Dashboard
                   <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link to="/docs">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                  API Documentation
                 </Button>
               </Link>
             </SignedIn>
@@ -219,10 +230,12 @@ const Landing = () => {
       <footer className="border-t border-border py-12 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-foreground via-foreground/80 to-foreground/60 rounded-lg flex items-center justify-center">
               <Bot className="w-5 h-5 text-background" />
             </div>
-            <span className="text-lg font-bold text-foreground">CogniDoc</span>
+            <span className="text-lg font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+              CogniDoc
+            </span>
           </div>
           <p className="text-muted-foreground">
             © 2024 CogniDoc. All rights reserved.
