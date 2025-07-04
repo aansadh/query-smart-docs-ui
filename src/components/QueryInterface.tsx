@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { MessageSquare, Send, Bot, User, FileText, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApi } from '@/hooks/useApi';
@@ -61,6 +60,7 @@ export const QueryInterface = () => {
         data: { query },
       });
 
+      // Handle the response format properly
       const queryResponse: QueryResponse = response.data;
 
       const assistantMessage: Message = {

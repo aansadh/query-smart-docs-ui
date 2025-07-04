@@ -119,18 +119,7 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-foreground via-foreground/80 to-foreground/60 rounded-2xl flex items-center justify-center shadow-lg">
-            <Bot className="w-9 h-9 text-background" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-              CogniDoc
-            </h1>
-            <p className="text-lg text-muted-foreground">AI Document Assistant</p>
-          </div>
-        </div>
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           Welcome to CogniDoc
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -252,7 +241,7 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full mt-auto"
+                    className="w-full mt-auto h-9"
                     onClick={() => onViewChange(feature.action)}
                   >
                     Get Started

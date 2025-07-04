@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Code, Globe, Key, FileText, MessageSquare, Trash2, Upload } from 'lucide-react';
+import { Code, Globe, Key, FileText, MessageSquare, Trash2, Upload, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ApiDocs = () => {
@@ -73,6 +73,16 @@ const ApiDocs = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Navigation */}
+        <div className="mb-8">
+          <Link to="/">
+            <Button variant="outline" className="mb-4">
+              <Home className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
