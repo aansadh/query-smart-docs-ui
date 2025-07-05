@@ -119,7 +119,7 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/80 to-foreground/60 bg-clip-text text-transparent">
           Welcome to DocuMind AI
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

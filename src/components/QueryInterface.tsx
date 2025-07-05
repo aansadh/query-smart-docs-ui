@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Send, Bot, User, FileText, Loader2, Upload, Globe } from 'lucide-react';
+import { Send, Bot, User, FileText, Loader2, Upload, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApi } from '@/hooks/useApi';
 
@@ -149,46 +149,31 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   ];
 
   return (
-    <div className="relative h-screen bg-background overflow-hidden">
-      {/* Fixed Header */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-3">
-            <MessageSquare className="w-6 h-6" />
-            <h1 className="text-2xl font-semibold">Ask Questions</h1>
-          </div>
-          {currentSessionId && (
-            <Badge variant="outline" className="px-3 py-1">
-              Active Session
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Messages Container - Full screen with padding for fixed elements */}
-      <div className="absolute inset-0 pt-20 pb-32 overflow-y-auto">
-        <div className="p-4 space-y-4 min-h-full">
+    <div className="h-screen flex flex-col bg-background">
+      {/* Chat Messages Area - Takes up remaining space and scrolls naturally */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto p-6 space-y-6">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-20rem)] text-center space-y-6">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
               <Bot className="w-16 h-16 text-muted-foreground/50" />
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-muted-foreground">
+              <div className="space-y-3">
+                <h3 className="text-2xl font-semibold text-foreground">
                   Start a conversation
                 </h3>
-                <p className="text-sm text-muted-foreground max-w-md">
+                <p className="text-muted-foreground max-w-md mx-auto">
                   Ask questions about your documents and get AI-powered answers with source citations
                 </p>
               </div>
               
               {/* Example Questions */}
-              <div className="space-y-3 max-w-2xl">
+              <div className="space-y-4 max-w-2xl w-full">
                 <p className="text-sm font-medium text-muted-foreground">Try these example questions:</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {exampleQuestions.map((question, index) => (
                     <button
                       key={index}
                       onClick={() => handleExampleQuestion(question)}
-                      className="p-3 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
+                      className="p-4 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
                     >
                       {question}
                     </button>
@@ -258,9 +243,9 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
         </div>
       </div>
 
-      {/* Fixed Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="p-4">
+      {/* Fixed Input Area at Bottom */}
+      <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-4xl mx-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="relative">
               <Textarea
