@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +20,11 @@ interface Message {
   timestamp: Date;
 }
 
-export const QueryInterface = () => {
+interface QueryInterfaceProps {
+  onViewChange?: (view: string) => void;
+}
+
+export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   const { toast } = useToast();
   const { makeRequest } = useApi();
   const [query, setQuery] = useState('');
@@ -28,6 +32,29 @@ export const QueryInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const currentSessionId = localStorage.getItem('current_session_id');
+
+  // Load chat history from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem(`chat_history_${currentSessionId}`);
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        setMessages(parsedMessages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        })));
+      } catch (error) {
+        console.error('Failed to parse saved messages:', error);
+      }
+    }
+  }, [currentSessionId]);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0 && currentSessionId) {
+      localStorage.setItem(`chat_history_${currentSessionId}`, JSON.stringify(messages));
+    }
+  }, [messages, currentSessionId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +86,6 @@ export const QueryInterface = () => {
         data: { query },
       });
 
-      // Handle the response format properly
       const queryResponse: QueryResponse = response.data;
 
       const assistantMessage: Message = {
@@ -90,25 +116,32 @@ export const QueryInterface = () => {
   };
 
   const handleUpload = () => {
-    // Navigate to upload page logic would go here
-    toast({
-      title: "Upload Documents",
-      description: "Navigate to the upload section to add documents",
-    });
+    if (onViewChange) {
+      onViewChange('upload');
+    }
   };
 
   const handleScrape = () => {
-    // Navigate to scrape page logic would go here
-    toast({
-      title: "Web Scraping",
-      description: "Navigate to the scraping section to add web content",
-    });
+    if (onViewChange) {
+      onViewChange('scrape');
+    }
   };
 
+  const handleExampleQuestion = (question: string) => {
+    setQuery(question);
+  };
+
+  const exampleQuestions = [
+    "What are the main topics covered in the uploaded documents?",
+    "Can you summarize the key findings from the research?",
+    "What are the most important points mentioned?",
+    "How does this relate to current industry trends?",
+  ];
+
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+    <div className="flex flex-col h-screen bg-background">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center space-x-3">
           <MessageSquare className="w-6 h-6" />
           <h1 className="text-2xl font-semibold">Ask Questions</h1>
@@ -120,10 +153,10 @@ export const QueryInterface = () => {
         )}
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages Container - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
             <Bot className="w-16 h-16 text-muted-foreground/50" />
             <div className="space-y-2">
               <h3 className="text-lg font-medium text-muted-foreground">
@@ -132,6 +165,22 @@ export const QueryInterface = () => {
               <p className="text-sm text-muted-foreground max-w-md">
                 Ask questions about your documents and get AI-powered answers with source citations
               </p>
+            </div>
+            
+            {/* Example Questions */}
+            <div className="space-y-3 max-w-2xl">
+              <p className="text-sm font-medium text-muted-foreground">Try these example questions:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {exampleQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleExampleQuestion(question)}
+                    className="p-3 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
@@ -194,8 +243,8 @@ export const QueryInterface = () => {
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="border-t p-4">
+      {/* Input Area - Fixed at bottom */}
+      <div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4">
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="relative">
             <Textarea

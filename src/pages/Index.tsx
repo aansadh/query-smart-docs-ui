@@ -20,7 +20,7 @@ export default function Index() {
       case 'upload':
         return <UploadDocuments />;
       case 'query':
-        return <QueryInterface />;
+        return <QueryInterface onViewChange={setCurrentView} />;
       case 'scrape':
         return <WebScraping />;
       case 'files':
