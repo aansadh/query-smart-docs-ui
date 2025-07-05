@@ -64,7 +64,7 @@ const AppSidebar = ({ currentView, onViewChange }: { currentView: string; onView
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              DocuMind AI
+              CogniDoc
             </h1>
             <p className="text-sm text-muted-foreground">AI Document Assistant</p>
           </div>

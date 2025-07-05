@@ -120,7 +120,7 @@ export const Dashboard = ({ onViewChange }: DashboardProps) => {
       {/* Header */}
       <div className="text-center space-y-4">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/80 to-foreground/60 bg-clip-text text-transparent">
-          Welcome to DocuMind AI
+          Welcome to CogniDoc
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Your AI-powered document assistant. Upload documents, ask questions, and get intelligent insights.
