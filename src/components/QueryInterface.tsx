@@ -87,15 +87,13 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const currentQuery = query;
-    setQuery(''); // Clear input field immediately after sending
     setIsLoading(true);
 
     try {
       const response = await makeRequest({
         method: 'POST',
         url: '/query/askQuery',
-        data: { query: currentQuery },
+        data: { query },
       });
 
       const queryResponse: QueryResponse = response.data;
@@ -109,6 +107,7 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      setQuery('');
       
       toast({
         title: "Query Processed",
@@ -116,17 +115,6 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
       });
     } catch (error) {
       console.error('Query error:', error);
-      
-      // Add error message from chatbot
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        type: 'assistant',
-        content: "I apologize, but I'm having trouble processing your request right now. This could be due to a temporary server issue or a problem with your session. Please try again in a moment, or check if you need to create a new session.",
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-      
       toast({
         title: "Error",
         description: "Failed to process your query. Please try again.",
@@ -172,114 +160,112 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   ];
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
-              <Bot className="w-16 h-16 text-muted-foreground/50" />
-              <div className="space-y-3">
-                <h3 className="text-2xl font-semibold text-foreground">
-                  Start a conversation
-                </h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Ask questions about your documents and get AI-powered answers with source citations
-                </p>
-              </div>
-              
-              {/* Example Questions */}
-              <div className="space-y-4 max-w-2xl w-full">
-                <p className="text-sm font-medium text-muted-foreground">Try these example questions:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {exampleQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleExampleQuestion(question)}
-                      className="p-4 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
+    <>
+      {/* Chat Messages - Natural page flow */}
+      <div className="max-w-4xl mx-auto p-6 space-y-6 pb-32 min-h-screen">
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
+            <Bot className="w-16 h-16 text-muted-foreground/50" />
+            <div className="space-y-3">
+              <h3 className="text-2xl font-semibold text-foreground">
+                Start a conversation
+              </h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Ask questions about your documents and get AI-powered answers with source citations
+              </p>
+            </div>
+            
+            {/* Example Questions */}
+            <div className="space-y-4 max-w-2xl w-full">
+              <p className="text-sm font-medium text-muted-foreground">Try these example questions:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {exampleQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleExampleQuestion(question)}
+                    className="p-4 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
+                  >
+                    {question}
+                  </button>
+                ))}
               </div>
             </div>
-          ) : (
-            <>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold">Chat History</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearChat}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear Chat
-                </Button>
-              </div>
-              {messages.map((message) => (
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Chat History</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearChat}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear Chat
+              </Button>
+            </div>
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
-                  key={message.id}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`max-w-[80%] p-4 rounded-lg ${
+                    message.type === 'user'
+                      ? 'bg-primary text-primary-foreground ml-12'
+                      : 'bg-muted mr-12'
+                  }`}
                 >
-                  <div
-                    className={`max-w-[80%] p-4 rounded-lg ${
-                      message.type === 'user'
-                        ? 'bg-primary text-primary-foreground ml-12'
-                        : 'bg-muted mr-12'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      {message.type === 'user' ? (
-                        <User className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                      ) : (
-                        <Bot className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                      )}
-                      <div className="flex-1 space-y-2">
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                          {message.content}
-                        </p>
-                        {message.sources && message.sources.length > 0 && (
-                          <div className="pt-2 border-t border-border/50">
-                            <p className="text-xs font-medium mb-2 opacity-80">Sources:</p>
-                            <div className="flex flex-wrap gap-1">
-                              {message.sources.map((source, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  <FileText className="w-3 h-3 mr-1" />
-                                  {source}
-                                </Badge>
-                              ))}
-                            </div>
+                  <div className="flex items-start space-x-3">
+                    {message.type === 'user' ? (
+                      <User className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    ) : (
+                      <Bot className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {message.content}
+                      </p>
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="pt-2 border-t border-border/50">
+                          <p className="text-xs font-medium mb-2 opacity-80">Sources:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {message.sources.map((source, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                {source}
+                              </Badge>
+                            ))}
                           </div>
-                        )}
-                        <p className="text-xs opacity-50">
-                          {message.timestamp.toLocaleTimeString()}
-                        </p>
-                      </div>
+                        </div>
+                      )}
+                      <p className="text-xs opacity-50">
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
                     </div>
                   </div>
                 </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] p-4 rounded-lg bg-muted mr-12">
-                    <div className="flex items-center space-x-3">
-                      <Bot className="w-5 h-5" />
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Processing your question...</span>
-                    </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-[80%] p-4 rounded-lg bg-muted mr-12">
+                  <div className="flex items-center space-x-3">
+                    <Bot className="w-5 h-5" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Processing your question...</span>
                   </div>
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </>
+        )}
       </div>
 
-      {/* Fixed Input Area at Bottom */}
-      <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Fixed Input Area at Bottom - Same positioning as navbar */}
+      <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
         <div className="max-w-4xl mx-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="relative">
@@ -346,6 +332,6 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
           </form>
         </div>
       </div>
-    </div>
+    </>
   );
 };
