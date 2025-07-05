@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -30,8 +30,18 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentSessionId = localStorage.getItem('current_session_id');
+
+  // Auto scroll to bottom when messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -139,175 +149,182 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Header - Fixed */}
-      <div className="flex-shrink-0 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center space-x-3">
-          <MessageSquare className="w-6 h-6" />
-          <h1 className="text-2xl font-semibold">Ask Questions</h1>
+    <div className="relative h-screen bg-background overflow-hidden">
+      {/* Fixed Header */}
+      <div className="absolute top-0 left-0 right-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-3">
+            <MessageSquare className="w-6 h-6" />
+            <h1 className="text-2xl font-semibold">Ask Questions</h1>
+          </div>
+          {currentSessionId && (
+            <Badge variant="outline" className="px-3 py-1">
+              Active Session
+            </Badge>
+          )}
         </div>
-        {currentSessionId && (
-          <Badge variant="outline" className="px-3 py-1">
-            Active Session
-          </Badge>
-        )}
       </div>
 
-      {/* Messages Container - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-            <Bot className="w-16 h-16 text-muted-foreground/50" />
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium text-muted-foreground">
-                Start a conversation
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Ask questions about your documents and get AI-powered answers with source citations
-              </p>
-            </div>
-            
-            {/* Example Questions */}
-            <div className="space-y-3 max-w-2xl">
-              <p className="text-sm font-medium text-muted-foreground">Try these example questions:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {exampleQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleExampleQuestion(question)}
-                    className="p-3 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
-                  >
-                    {question}
-                  </button>
-                ))}
+      {/* Messages Container - Full screen with padding for fixed elements */}
+      <div className="absolute inset-0 pt-20 pb-32 overflow-y-auto">
+        <div className="p-4 space-y-4 min-h-full">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-20rem)] text-center space-y-6">
+              <Bot className="w-16 h-16 text-muted-foreground/50" />
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium text-muted-foreground">
+                  Start a conversation
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Ask questions about your documents and get AI-powered answers with source citations
+                </p>
+              </div>
+              
+              {/* Example Questions */}
+              <div className="space-y-3 max-w-2xl">
+                <p className="text-sm font-medium text-muted-foreground">Try these example questions:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {exampleQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleExampleQuestion(question)}
+                      className="p-3 text-left text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border/50 hover:border-border"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <>
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+          ) : (
+            <>
+              {messages.map((message) => (
                 <div
-                  className={`max-w-[80%] p-4 rounded-lg ${
-                    message.type === 'user'
-                      ? 'bg-primary text-primary-foreground ml-12'
-                      : 'bg-muted mr-12'
-                  }`}
+                  key={message.id}
+                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className="flex items-start space-x-3">
-                    {message.type === 'user' ? (
-                      <User className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <Bot className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    )}
-                    <div className="flex-1 space-y-2">
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                        {message.content}
-                      </p>
-                      {message.sources && message.sources.length > 0 && (
-                        <div className="pt-2 border-t border-border/50">
-                          <p className="text-xs font-medium mb-2 opacity-80">Sources:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {message.sources.map((source, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                <FileText className="w-3 h-3 mr-1" />
-                                {source}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
+                  <div
+                    className={`max-w-[80%] p-4 rounded-lg ${
+                      message.type === 'user'
+                        ? 'bg-primary text-primary-foreground ml-12'
+                        : 'bg-muted mr-12'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      {message.type === 'user' ? (
+                        <User className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <Bot className="w-5 h-5 mt-0.5 flex-shrink-0" />
                       )}
-                      <p className="text-xs opacity-50">
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
+                      <div className="flex-1 space-y-2">
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                          {message.content}
+                        </p>
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="pt-2 border-t border-border/50">
+                            <p className="text-xs font-medium mb-2 opacity-80">Sources:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {message.sources.map((source, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  <FileText className="w-3 h-3 mr-1" />
+                                  {source}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-xs opacity-50">
+                          {message.timestamp.toLocaleTimeString()}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] p-4 rounded-lg bg-muted mr-12">
-                  <div className="flex items-center space-x-3">
-                    <Bot className="w-5 h-5" />
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">Processing your question...</span>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] p-4 rounded-lg bg-muted mr-12">
+                    <div className="flex items-center space-x-3">
+                      <Bot className="w-5 h-5" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-sm">Processing your question...</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+              <div ref={messagesEndRef} />
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Input Area - Fixed at bottom */}
-      <div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="relative">
-            <Textarea
-              placeholder="Ask a question about your documents..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="min-h-[60px] max-h-[120px] resize-none pr-4 pb-12"
-              disabled={isLoading}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-            />
-            
-            {/* Action Buttons */}
-            <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+      {/* Fixed Input Area */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
+        <div className="p-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="relative">
+              <Textarea
+                placeholder="Ask a question about your documents..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="min-h-[60px] max-h-[120px] resize-none pr-4 pb-12"
+                disabled={isLoading}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+              />
+              
+              {/* Action Buttons */}
+              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUpload}
+                    disabled={isLoading}
+                    className="h-8 px-3"
+                  >
+                    <Upload className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleScrape}
+                    disabled={isLoading}
+                    className="h-8 px-3"
+                  >
+                    <Globe className="w-4 h-4" />
+                  </Button>
+                </div>
+                
                 <Button
-                  type="button"
-                  variant="ghost"
+                  type="submit"
                   size="sm"
-                  onClick={handleUpload}
-                  disabled={isLoading}
-                  className="h-8 px-3"
+                  disabled={!query.trim() || isLoading || !currentSessionId}
+                  className="h-8 px-4"
                 >
-                  <Upload className="w-4 h-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleScrape}
-                  disabled={isLoading}
-                  className="h-8 px-3"
-                >
-                  <Globe className="w-4 h-4" />
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
-              
-              <Button
-                type="submit"
-                size="sm"
-                disabled={!query.trim() || isLoading || !currentSessionId}
-                className="h-8 px-4"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
             </div>
-          </div>
-          
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center space-x-4">
-              <span>Press Enter to send, Shift+Enter for new line</span>
+            
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center space-x-4">
+                <span>Press Enter to send, Shift+Enter for new line</span>
+              </div>
+              <span>{query.length}/1000</span>
             </div>
-            <span>{query.length}/1000</span>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
