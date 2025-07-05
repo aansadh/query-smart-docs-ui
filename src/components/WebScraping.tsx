@@ -77,14 +77,11 @@ export const WebScraping = () => {
     'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
   ];
 
-  const currentSessionId = localStorage.getItem('current_session_id');
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
         <div>
           <Card>
-            <CardHeader>
+            <CardHeader className='w-full'>
               <CardTitle className="flex items-center space-x-2">
                 <Globe className="w-5 h-5" />
                 <span>Web Scraping</span>
@@ -95,12 +92,6 @@ export const WebScraping = () => {
             </CardHeader>
           </Card>
         </div>
-        {currentSessionId && (
-          <Badge variant="outline" className="px-3 py-1">
-            Session: {currentSessionId.substring(0, 12)}...
-          </Badge>
-        )}
-      </div>
 
       <Card>
         <CardHeader>

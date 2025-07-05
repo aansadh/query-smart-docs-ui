@@ -216,23 +216,23 @@ export const Layout = ({ children, currentView, onViewChange }: LayoutProps) => 
                     <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="cursor-help hover:text-foreground transition-colors">
-                            ID: {sessionDetails.id.substring(0, 12)}...
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="font-mono text-xs">Full ID: {sessionDetails.id}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <span>•</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
                           <span className="cursor-help hover:text-foreground transition-colors max-w-24 truncate">
                             {sessionDetails.name}
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Session Name: {sessionDetails.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <span>•</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help hover:text-foreground transition-colors">
+                            {sessionDetails.id.substring(0, 12)}...
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-mono text-xs">ID: {sessionDetails.id}</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
