@@ -149,10 +149,10 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
   ];
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Chat Messages Area - Takes up remaining space and scrolls naturally */}
+    <div className="h-screen flex flex-col">
+      {/* Chat Messages Area - Takes up available space between navbar and input */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="max-w-4xl mx-auto p-6 space-y-6 pb-32">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
               <Bot className="w-16 h-16 text-muted-foreground/50" />
@@ -244,7 +244,7 @@ export const QueryInterface = ({ onViewChange }: QueryInterfaceProps) => {
       </div>
 
       {/* Fixed Input Area at Bottom */}
-      <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
         <div className="max-w-4xl mx-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="relative">
