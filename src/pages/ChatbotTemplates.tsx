@@ -1,12 +1,28 @@
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Bot, Smartphone, Globe, Code2, Palette, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+interface TemplateConfig {
+  position: string;
+  theme: string;
+  size: string;
+}
 
 const ChatbotTemplates = () => {
   const [copiedTemplate, setCopiedTemplate] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [config, setConfig] = useState<TemplateConfig>({
+    position: "bottom-right",
+    theme: "purple",
+    size: "medium"
+  });
 
   const copyToClipboard = async (code: string, templateName: string) => {
     try {
@@ -19,20 +35,81 @@ const ChatbotTemplates = () => {
     }
   };
 
+  const generateCustomizedCode = (baseCode: string, templateId: string) => {
+    let customizedCode = baseCode;
+    
+    // Replace session token placeholder
+    customizedCode = customizedCode.replace(/your_session_token_here/g, 'YOUR_SESSION_TOKEN');
+    
+    // Add configuration comments
+    const configComment = `/*
+ * Configuration Options:
+ * Position: ${config.position}
+ * Theme: ${config.theme}
+ * Size: ${config.size}
+ * 
+ * To customize further, modify the CSS variables or props below
+ */
+
+`;
+    
+    // Inject position and theme configurations based on template type
+    if (templateId === 'react-basic') {
+      customizedCode = customizedCode.replace(
+        "const Chatbot = () => {",
+        `interface ChatbotProps {
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
+  theme?: 'purple' | 'blue' | 'green' | 'dark';
+  size?: 'small' | 'medium' | 'large';
+  className?: string;
+}
+
+const Chatbot: React.FC<ChatbotProps> = ({ 
+  position = '${config.position}', 
+  theme = '${config.theme}', 
+  size = '${config.size}',
+  className = ''
+}) => {`
+      );
+      
+      customizedCode = customizedCode.replace(
+        'className="chatbot-container"',
+        `className={\`chatbot-container chatbot-\${position} chatbot-\${theme} chatbot-\${size} \${className}\`}`
+      );
+    } else if (templateId === 'vanilla-js') {
+      const positionStyles = {
+        'bottom-right': 'bottom: 20px; right: 20px;',
+        'bottom-left': 'bottom: 20px; left: 20px;',
+        'top-right': 'top: 20px; right: 20px;',
+        'top-left': 'top: 20px; left: 20px;',
+        'center': 'top: 50%; left: 50%; transform: translate(-50%, -50%);'
+      };
+      
+      customizedCode = customizedCode.replace(
+        'bottom: 20px;\n            right: 20px;',
+        positionStyles[config.position as keyof typeof positionStyles]
+      );
+    }
+    
+    return configComment + customizedCode;
+  };
+
   const templates = [
     {
       id: "react-basic",
-      name: "React Basic Chatbot",
-      description: "A simple React chatbot component with basic styling",
+      name: "React Component",
+      description: "TypeScript React component with props for easy customization",
+      icon: <Code2 className="h-6 w-6" />,
+      features: ["TypeScript", "Customizable Props", "Modern Hooks"],
+      difficulty: "Beginner",
       code: `import React, { useState } from 'react';
-import './Chatbot.css'; // Add your own styles
+import './Chatbot.css';
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Replace with your actual token from CogniDoc
   const SESSION_TOKEN = 'your_session_token_here';
   const API_BASE_URL = 'http://localhost:8000';
 
@@ -97,12 +174,50 @@ const Chatbot = () => {
   );
 };
 
-export default Chatbot;`
+export default Chatbot;
+
+/* Add this CSS file (Chatbot.css) */
+/*
+.chatbot-container {
+  position: fixed;
+  width: 350px;
+  height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  z-index: 1000;
+}
+
+.chatbot-bottom-right { bottom: 20px; right: 20px; }
+.chatbot-bottom-left { bottom: 20px; left: 20px; }
+.chatbot-top-right { top: 20px; right: 20px; }
+.chatbot-top-left { top: 20px; left: 20px; }
+.chatbot-center { 
+  top: 50%; left: 50%; 
+  transform: translate(-50%, -50%); 
+}
+
+.chatbot-purple { --primary-color: #6c47ff; }
+.chatbot-blue { --primary-color: #2563eb; }
+.chatbot-green { --primary-color: #16a34a; }
+.chatbot-dark { --primary-color: #1f2937; }
+
+.chatbot-small { width: 300px; height: 400px; }
+.chatbot-medium { width: 350px; height: 500px; }
+.chatbot-large { width: 400px; height: 600px; }
+*/`
     },
     {
       id: "vanilla-js",
-      name: "Vanilla JavaScript Chatbot",
-      description: "Pure JavaScript implementation for any website",
+      name: "Vanilla JavaScript",
+      description: "Pure JavaScript widget that works on any website",
+      icon: <Globe className="h-6 w-6" />,
+      features: ["No Dependencies", "Easy Integration", "Lightweight"],
+      difficulty: "Beginner",
       code: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,72 +232,93 @@ export default Chatbot;`
             width: 350px;
             height: 500px;
             border: 1px solid #ddd;
-            border-radius: 10px;
+            border-radius: 12px;
             background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            z-index: 1000;
         }
         .chat-header {
-            background: #6c47ff;
+            background: var(--primary-color, #6c47ff);
             color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            font-weight: bold;
+            padding: 16px;
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
         }
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: 16px;
+            background: #fafafa;
         }
         .message {
-            margin: 10px 0;
-            padding: 8px 12px;
-            border-radius: 8px;
-            max-width: 80%;
+            margin: 12px 0;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.4;
         }
         .user-message {
-            background: #e3f2fd;
+            background: var(--primary-color, #6c47ff);
+            color: white;
             margin-left: auto;
-            text-align: right;
+            border-bottom-right-radius: 4px;
         }
         .bot-message {
-            background: #f5f5f5;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 4px;
         }
         .chat-input {
             display: flex;
-            padding: 10px;
-            border-top: 1px solid #eee;
+            padding: 16px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 0 0 12px 12px;
         }
         .chat-input input {
             flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-right: 8px;
+            font-size: 14px;
         }
         .chat-input button {
-            padding: 10px 15px;
-            background: #6c47ff;
+            padding: 10px 16px;
+            background: var(--primary-color, #6c47ff);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .chat-input button:hover {
+            opacity: 0.9;
+        }
+        .chat-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
     <div class="chatbot-widget">
-        <div class="chat-header">CogniDoc Assistant</div>
+        <div class="chat-header">
+            🤖 CogniDoc Assistant
+        </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
             <input type="text" id="userInput" placeholder="Ask me anything...">
-            <button onclick="sendMessage()">Send</button>
+            <button onclick="sendMessage()" id="sendBtn">Send</button>
         </div>
     </div>
 
     <script>
-        // Replace with your actual token from CogniDoc
         const SESSION_TOKEN = 'your_session_token_here';
         const API_BASE_URL = 'http://localhost:8000';
 
@@ -197,12 +333,15 @@ export default Chatbot;`
 
         async function sendMessage() {
             const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
             const message = input.value.trim();
             
             if (!message) return;
 
             addMessage(message, true);
             input.value = '';
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
 
             try {
                 const response = await fetch(\`\${API_BASE_URL}/query/askQuery\`, {
@@ -223,10 +362,12 @@ export default Chatbot;`
                 }
             } catch (error) {
                 addMessage('Failed to connect to the server.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
             }
         }
 
-        // Allow Enter key to send message
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
@@ -234,73 +375,115 @@ export default Chatbot;`
         });
 
         // Initial greeting
-        addMessage('Hello! I\'m your CogniDoc assistant. How can I help you today?');
+        setTimeout(() => {
+            addMessage('Hello! I\\'m your CogniDoc assistant. How can I help you today?');
+        }, 500);
     </script>
 </body>
 </html>`
     },
     {
       id: "nextjs-component",
-      name: "Next.js Chatbot Component",
-      description: "Modern Next.js component with TypeScript and Tailwind CSS",
+      name: "Next.js Component",
+      description: "Modern Next.js component with Tailwind CSS and TypeScript",
+      icon: <Smartphone className="h-6 w-6" />,
+      features: ["Tailwind CSS", "TypeScript", "Server Components"],
+      difficulty: "Intermediate",
       code: `'use client';
 
 import { useState } from 'react';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, X, Minus } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  timestamp: Date;
 }
 
-const CogniDocChatbot = () => {
+interface CogniDocChatbotProps {
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  theme?: 'purple' | 'blue' | 'green' | 'dark';
+  size?: 'small' | 'medium' | 'large';
+  sessionToken: string;
+  apiBaseUrl?: string;
+  className?: string;
+}
+
+const CogniDocChatbot: React.FC<CogniDocChatbotProps> = ({
+  position = 'bottom-right',
+  theme = 'purple',
+  size = 'medium',
+  sessionToken,
+  apiBaseUrl = 'http://localhost:8000',
+  className = ''
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hello! I\'m your CogniDoc assistant. How can I help you today?' }
+    { 
+      role: 'assistant', 
+      content: 'Hello! I\\'m your CogniDoc assistant. How can I help you today?',
+      timestamp: new Date()
+    }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Replace with your actual token from CogniDoc
-  const SESSION_TOKEN = 'your_session_token_here';
-  const API_BASE_URL = 'http://localhost:8000';
+  const themeClasses = {
+    purple: 'bg-purple-600 hover:bg-purple-700 text-white',
+    blue: 'bg-blue-600 hover:bg-blue-700 text-white',
+    green: 'bg-green-600 hover:bg-green-700 text-white',
+    dark: 'bg-gray-800 hover:bg-gray-900 text-white'
+  };
+
+  const positionClasses = {
+    'bottom-right': 'bottom-4 right-4',
+    'bottom-left': 'bottom-4 left-4',
+    'top-right': 'top-4 right-4',
+    'top-left': 'top-4 left-4'
+  };
+
+  const sizeClasses = {
+    small: 'w-80 h-96',
+    medium: 'w-96 h-[500px]',
+    large: 'w-[420px] h-[600px]'
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { 
+      role: 'user', 
+      content: input,
+      timestamp: new Date()
+    };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await fetch(\`\${API_BASE_URL}/query/askQuery\`, {
+      const response = await fetch(\`\${apiBaseUrl}/query/askQuery\`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': \`Bearer \${SESSION_TOKEN}\`
+          'Authorization': \`Bearer \${sessionToken}\`
         },
         body: JSON.stringify({ query: input })
       });
 
       const data = await response.json();
       
-      if (response.ok) {
-        const botMessage: Message = { 
-          role: 'assistant', 
-          content: data.response || 'No response received' 
-        };
-        setMessages(prev => [...prev, botMessage]);
-      } else {
-        const errorMessage: Message = { 
-          role: 'assistant', 
-          content: 'Sorry, I encountered an error. Please try again.' 
-        };
-        setMessages(prev => [...prev, errorMessage]);
-      }
+      const botMessage: Message = { 
+        role: 'assistant', 
+        content: response.ok ? (data.response || 'No response received') : 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       const errorMessage: Message = { 
         role: 'assistant', 
-        content: 'Failed to connect to the server.' 
+        content: 'Failed to connect to the server.',
+        timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -308,78 +491,112 @@ const CogniDocChatbot = () => {
     }
   };
 
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className={\`fixed \${positionClasses[position]} \${themeClasses[theme]} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-50 \${className}\`}
+      >
+        <Bot size={24} />
+      </button>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-96 w-full max-w-md mx-auto border border-gray-200 rounded-lg shadow-lg">
+    <div className={\`fixed \${positionClasses[position]} \${sizeClasses[size]} bg-white border border-gray-200 rounded-lg shadow-2xl flex flex-col z-50 \${className}\`}>
       {/* Header */}
-      <div className="bg-purple-600 text-white p-4 rounded-t-lg">
-        <h3 className="font-semibold flex items-center gap-2">
+      <div className={\`\${themeClasses[theme]} p-4 rounded-t-lg flex items-center justify-between\`}>
+        <div className="flex items-center gap-2">
           <Bot size={20} />
-          CogniDoc Assistant
-        </h3>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={\`flex items-start gap-2 \${
-              message.role === 'user' ? 'flex-row-reverse' : ''
-            }\`}
-          >
-            <div className={\`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center \${
-              message.role === 'user' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-600'
-            }\`}>
-              {message.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-            </div>
-            <div className={\`max-w-xs p-3 rounded-lg \${
-              message.role === 'user'
-                ? 'bg-blue-500 text-white rounded-br-none'
-                : 'bg-gray-100 text-gray-800 rounded-bl-none'
-            }\`}>
-              {message.content}
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-              <Bot size={16} className="text-gray-600" />
-            </div>
-            <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Input */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            disabled={isLoading}
-          />
+          <h3 className="font-semibold">CogniDoc Assistant</h3>
+        </div>
+        <div className="flex items-center gap-1">
           <button
-            onClick={sendMessage}
-            disabled={isLoading || !input.trim()}
-            className="bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setIsMinimized(!isMinimized)}
+            className="p-1 hover:bg-white/20 rounded"
           >
-            <Send size={16} />
+            <Minus size={16} />
+          </button>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1 hover:bg-white/20 rounded"
+          >
+            <X size={16} />
           </button>
         </div>
       </div>
+
+      {!isMinimized && (
+        <>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={\`flex items-start gap-2 animate-fade-in \${
+                  message.role === 'user' ? 'flex-row-reverse' : ''
+                }\`}
+              >
+                <div className={\`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center \${
+                  message.role === 'user' 
+                    ? themeClasses[theme] 
+                    : 'bg-gray-200 text-gray-600'
+                }\`}>
+                  {message.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                </div>
+                <div className={\`max-w-xs p-3 rounded-lg \${
+                  message.role === 'user'
+                    ? \`\${themeClasses[theme]} rounded-br-none\`
+                    : 'bg-white border border-gray-200 rounded-bl-none'
+                }\`}>
+                  <p className="text-sm">{message.content}</p>
+                  <span className={\`text-xs mt-1 block \${
+                    message.role === 'user' ? 'text-white/70' : 'text-gray-500'
+                  }\`}>
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <Bot size={16} className="text-gray-600" />
+                </div>
+                <div className="bg-white border border-gray-200 p-3 rounded-lg rounded-bl-none">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="p-4 border-t border-gray-200 bg-white rounded-b-lg">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                placeholder="Type your message..."
+                className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                disabled={isLoading}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={isLoading || !input.trim()}
+                className={\`\${themeClasses[theme]} p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200\`}
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -389,62 +606,194 @@ export default CogniDocChatbot;`
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Chatbot Templates</h1>
-        <p className="text-muted-foreground">
-          Copy and customize these chatbot templates for your projects. Remember to replace the session token with your actual token from the Create Token section.
+    <div className="container mx-auto p-6 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          Chatbot Templates
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Production-ready chatbot components that integrate seamlessly with your CogniDoc API. 
+          Click on any template to customize and copy the code.
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates.map((template) => (
-          <Card key={template.id} className="w-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{template.name}</CardTitle>
-                  <CardDescription>{template.description}</CardDescription>
+          <Dialog key={template.id}>
+            <DialogTrigger asChild>
+              <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover-scale group">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                      {template.icon}
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{template.name}</CardTitle>
+                      <Badge variant="secondary" className="mt-1">
+                        {template.difficulty}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardDescription className="text-sm">
+                    {template.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-1">
+                      {template.features.map((feature) => (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button className="w-full" variant="outline">
+                      View Template
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {template.icon}
+                  {template.name}
+                </DialogTitle>
+                <DialogDescription>
+                  {template.description}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="flex-1 overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+                  {/* Configuration Panel */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Palette className="h-4 w-4" />
+                      Customize
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="position" className="text-sm font-medium">
+                          Position
+                        </Label>
+                        <Select value={config.position} onValueChange={(value) => setConfig({...config, position: value})}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="bottom-right">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-3 w-3" />
+                                Bottom Right
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                            <SelectItem value="top-right">Top Right</SelectItem>
+                            <SelectItem value="top-left">Top Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="theme" className="text-sm font-medium">
+                          Theme
+                        </Label>
+                        <Select value={config.theme} onValueChange={(value) => setConfig({...config, theme: value})}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="purple">Purple</SelectItem>
+                            <SelectItem value="blue">Blue</SelectItem>
+                            <SelectItem value="green">Green</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="size" className="text-sm font-medium">
+                          Size
+                        </Label>
+                        <Select value={config.size} onValueChange={(value) => setConfig({...config, size: value})}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="small">Small</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="large">Large</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <Button
+                      onClick={() => copyToClipboard(generateCustomizedCode(template.code, template.id), template.name)}
+                      className="w-full"
+                      variant={copiedTemplate === template.name ? "secondary" : "default"}
+                    >
+                      {copiedTemplate === template.name ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy Code
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {/* Code Panel */}
+                  <div className="lg:col-span-3 overflow-hidden">
+                    <div className="h-full overflow-auto">
+                      <pre className="bg-muted p-4 rounded-lg text-xs leading-relaxed h-full overflow-auto">
+                        <code>{generateCustomizedCode(template.code, template.id)}</code>
+                      </pre>
+                    </div>
+                  </div>
                 </div>
-                <Button
-                  onClick={() => copyToClipboard(template.code, template.name)}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  {copiedTemplate === template.name ? (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      Copy Template
-                    </>
-                  )}
-                </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                  <code>{template.code}</code>
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
+            </DialogContent>
+          </Dialog>
         ))}
       </div>
 
-      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-        <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">Important Notes:</h3>
-        <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-          <li>• Replace <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">your_session_token_here</code> with your actual session token</li>
-          <li>• Get your session token from the "Create Token" section in this app</li>
-          <li>• Make sure your server URL matches your CogniDoc deployment</li>
-          <li>• These templates use the <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">/query/askQuery</code> endpoint</li>
-        </ul>
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6">
+        <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2">
+          <Bot className="h-5 w-5" />
+          Integration Guide
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-amber-700 dark:text-amber-300">
+          <div>
+            <h4 className="font-medium mb-2">Setup Steps:</h4>
+            <ol className="space-y-1 list-decimal list-inside">
+              <li>Get your session token from "Create Token" section</li>
+              <li>Choose a template and customize it</li>
+              <li>Replace <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">YOUR_SESSION_TOKEN</code></li>
+              <li>Install in your project</li>
+            </ol>
+          </div>
+          <div>
+            <h4 className="font-medium mb-2">Features:</h4>
+            <ul className="space-y-1 list-disc list-inside">
+              <li>Responsive design with mobile support</li>
+              <li>Customizable themes and positions</li>
+              <li>Error handling and loading states</li>
+              <li>TypeScript support included</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
