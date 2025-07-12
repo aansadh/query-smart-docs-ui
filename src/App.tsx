@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { apiService } from "@/services/api";
 import Landing from "./pages/Landing";
 import ApiDocs from "./pages/ApiDocs";
+import ChatbotTemplates from "./pages/ChatbotTemplates";
 import Index from "./pages/Index";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
@@ -38,6 +39,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/docs" element={<ApiDocs />} />
+              <Route path="/templates" element={<ChatbotTemplates />} />
               <Route path="/sign-in" element={<SignInPage />} />
               <Route path="/sign-up" element={<SignUpPage />} />
               <Route path="/app" element={
