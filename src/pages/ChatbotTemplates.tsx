@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, Bot, Smartphone, Globe, Code2, Palette, MapPin } from "lucide-react";
+import { Copy, Check, Bot, Smartphone, Globe, Code2, Palette, MapPin, User, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -92,6 +92,109 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
     
     return configComment + customizedCode;
+  };
+
+  const ChatbotPreview = ({ templateId, theme }: { templateId: string; theme: string }) => {
+    const [messages, setMessages] = useState([
+      { role: 'assistant', content: 'Hello! I\'m your CogniDoc assistant. How can I help you today?' }
+    ]);
+    const [input, setInput] = useState('');
+
+    const themeColors = {
+      purple: 'bg-purple-600',
+      blue: 'bg-blue-600', 
+      green: 'bg-green-600',
+      dark: 'bg-gray-800'
+    };
+
+    const handleSend = () => {
+      if (!input.trim()) return;
+      setMessages(prev => [...prev, 
+        { role: 'user', content: input },
+        { role: 'assistant', content: 'This is a preview. In the real implementation, this would connect to your CogniDoc API.' }
+      ]);
+      setInput('');
+    };
+
+    if (templateId === 'vanilla-js') {
+      return (
+        <div className="w-72 h-80 border border-gray-200 rounded-lg shadow-lg bg-white text-sm">
+          <div className={`${themeColors[theme as keyof typeof themeColors]} text-white p-3 rounded-t-lg font-semibold`}>
+            🤖 CogniDoc Assistant
+          </div>
+          <div className="flex-1 p-3 h-48 overflow-y-auto bg-gray-50">
+            {messages.slice(-3).map((msg, idx) => (
+              <div key={idx} className={`mb-2 p-2 rounded text-xs ${
+                msg.role === 'user' 
+                  ? `${themeColors[theme as keyof typeof themeColors]} text-white ml-8` 
+                  : 'bg-white border'
+              }`}>
+                {msg.content}
+              </div>
+            ))}
+          </div>
+          <div className="p-3 border-t flex gap-2">
+            <input 
+              className="flex-1 p-1 border rounded text-xs" 
+              placeholder="Try me..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            />
+            <button 
+              className={`${themeColors[theme as keyof typeof themeColors]} text-white px-2 py-1 rounded text-xs`}
+              onClick={handleSend}
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-72 h-80 border border-gray-200 rounded-lg shadow-lg bg-white flex flex-col text-sm">
+        <div className={`${themeColors[theme as keyof typeof themeColors]} text-white p-3 rounded-t-lg font-semibold flex items-center gap-2`}>
+          <Bot size={16} />
+          CogniDoc Assistant
+        </div>
+        <div className="flex-1 p-3 overflow-y-auto bg-gray-50">
+          {messages.slice(-3).map((msg, idx) => (
+            <div key={idx} className={`flex items-start gap-2 mb-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                msg.role === 'user' 
+                  ? `${themeColors[theme as keyof typeof themeColors]} text-white` 
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
+                {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
+              </div>
+              <div className={`max-w-40 p-2 rounded-lg text-xs ${
+                msg.role === 'user'
+                  ? `${themeColors[theme as keyof typeof themeColors]} text-white rounded-br-none`
+                  : 'bg-white border rounded-bl-none'
+              }`}>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="p-3 border-t flex gap-2">
+          <input 
+            className="flex-1 p-2 border rounded-lg text-xs" 
+            placeholder="Type your message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          />
+          <button 
+            className={`${themeColors[theme as keyof typeof themeColors]} text-white p-2 rounded-lg`}
+            onClick={handleSend}
+          >
+            <Send size={12} />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const templates = [
@@ -617,13 +720,13 @@ export default CogniDocChatbot;`
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {templates.map((template) => (
           <Dialog key={template.id}>
             <DialogTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover-scale group">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3 mb-2">
+              <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 hover-scale group border-2 hover:border-primary/20">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                       {template.icon}
                     </div>
@@ -634,23 +737,24 @@ export default CogniDocChatbot;`
                       </Badge>
                     </div>
                   </div>
-                  <CardDescription className="text-sm">
+                  <CardDescription className="text-sm mb-4">
                     {template.description}
                   </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-1">
-                      {template.features.map((feature) => (
-                        <Badge key={feature} variant="outline" className="text-xs">
-                          {feature}
-                        </Badge>
-                      ))}
-                    </div>
-                    <Button className="w-full" variant="outline">
-                      View Template
-                    </Button>
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {template.features.map((feature) => (
+                      <Badge key={feature} variant="outline" className="text-xs">
+                        {feature}
+                      </Badge>
+                    ))}
                   </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex justify-center mb-4">
+                    <ChatbotPreview templateId={template.id} theme={config.theme} />
+                  </div>
+                  <Button className="w-full" variant="outline">
+                    Customize & Copy Code
+                  </Button>
                 </CardContent>
               </Card>
             </DialogTrigger>
@@ -755,8 +859,9 @@ export default CogniDocChatbot;`
                   </div>
                   
                   {/* Code Panel */}
-                  <div className="lg:col-span-3 overflow-hidden">
-                    <div className="h-full overflow-auto">
+                  <div className="lg:col-span-3 flex flex-col min-h-0">
+                    <h4 className="font-medium mb-2">Generated Code:</h4>
+                    <div className="flex-1 min-h-0 border rounded-lg">
                       <pre className="bg-muted p-4 rounded-lg text-xs leading-relaxed h-full overflow-auto">
                         <code>{generateCustomizedCode(template.code, template.id)}</code>
                       </pre>
